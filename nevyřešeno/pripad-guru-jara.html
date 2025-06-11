@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guru Jára – Kontroverzní postava české duchovní scény</title>
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?">
+  <meta name="description" content="Rozbor případu Guru Járy – duchovní guru, obvinění ze zneužívání a debata o svobodě víry.">
+  <meta name="keywords" content="Guru Jára, Otakar Březina, esoterika, sekta, soud, zneužívání, kontroverze">
+  <meta name="author" content="Nevyreseno.cz">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="container header-content">
+      <div class="logo">
+        <span style="margin-left:10px; font-size:1.2rem;">Nevyreseno.cz</span>
+        <canvas id="czFlag" width="45" height="30" style="margin-left:15px; vertical-align: middle;"></canvas>
+      </div>
+      <nav class="nav">
+        <a href="index.html">Domů</a>
+        <a href="#">Případy</a>
+        <a href="#">Analýzy</a>
+        <a href="#">Kontakt</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content container">
+    <article class="article-full">
+      <h1>Guru Jára – Duchovní učitel, léčitel, nebo manipulátor?</h1>
+      <img src="guru-jara.png" alt="Guru Jára" class="article-img">
+
+      <p><strong>Otakar Březina, veřejně známý jako Guru Jára, byl dlouhá léta vnímán jako duchovní učitel a léčitel.</strong> Jeho metody a filozofie přitahovaly stovky následovníků z různých koutů světa. Založil vlastní duchovní školu, cestoval, psal knihy. Ale za mystikou se skrýval i stín – obvinění z manipulace, zneužívání a později i trestní stíhání. Kdo byl Guru Jára? Osvícený léčitel, nebo mistr manipulace?</p>
+
+      <h2>Vzestup duchovního vůdce</h2>
+      <p>Otakar Březina se začal veřejně prezentovat jako Guru Jára na přelomu 90. let. Jeho učení kombinovalo prvky tantrického buddhismu, mystiky, magie a práce s energií. Hlásal duchovní očistu skrze tělesnou zkušenost, což zahrnovalo i intimní terapie – často vedené právě jím. Vznikl kolem něj okruh oddaných žáků, kteří ho považovali za duchovní autoritu a léčitele.</p>
+
+      <h2>Obvinění a soudní procesy</h2>
+      <p>V roce 2007 začalo být jeho jméno skloňováno v souvislosti s trestním oznámením. Několik žen tvrdilo, že byly při "očistných rituálech" zneužity. Tvrdily, že byly v manipulativním psychickém stavu, kdy nebyly schopny dát plně vědomý souhlas. Guru Jára obvinění odmítal, považoval je za útok proti svobodě víry a za nepochopení tantrických praktik.</p>
+
+      <p>V roce 2012 byl poprvé odsouzen za znásilnění. Následně se ukryl v zahraničí – cestoval po Asii a Jižní Americe, kde pokračoval ve své činnosti. V roce 2014 byl zadržen na Filipínách a vydán do České republiky. V roce 2018 byl pravomocně odsouzen k desetiletému trestu odnětí svobody.</p>
+
+      <h2>Sekta nebo duchovní škola?</h2>
+      <p>Jeho komunita, známá jako Poetrie, byla médii často označována za sektu. Kritici upozorňovali na uzavřenost skupiny, na charismatickou kontrolu, kterou Guru Jára měl nad svými žáky, i na finanční a sexuální závislosti. Podle obhájců šlo ale o dobrovolné zapojení do duchovního systému, který nebyl pro každého a byl špatně pochopen.</p>
+
+      <h2>Mezinárodní přesah</h2>
+      <p>Guru Jára měl následovníky nejen v Česku, ale i v Polsku, Brazílii, Indii a dalších zemích. Jeho knihy byly překládány, semináře pořádány online i fyzicky. Tvrdil, že je pronásledován za svobodu duchovního projevu. Jeho zastánci mluvili o justiční zvůli, kritici o nebezpečné manipulaci.</p>
+
+      <h2>Mýtus, realita a pravda</h2>
+      <p>Případ Guru Járy opět nastolil otázky: kde končí svoboda víry a začíná trestný čin? Je duchovní autorita odpovědná za emocionální a tělesné hranice svých žáků? A lze vůbec objektivně posoudit vztah učitele a žáka v duchovní sféře?</p>
+
+      <footer style="margin-top:40px;font-size:0.9rem;color:#777;">
+        Zdroj: archivní články, soudní rozhodnutí, veřejné výpovědi, weby stoupenců i kritiků.
+      </footer>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      &copy; 2025 Nevyreseno.cz – Pravda nikdy neumírá.
+    </div>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('czFlag');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height / 2);
+
+    ctx.fillStyle = '#d7141a';
+    ctx.fillRect(0, height / 2, width, height / 2);
+
+    ctx.fillStyle = '#11457e';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width * 0.5, height / 2);
+    ctx.lineTo(0, height);
+    ctx.closePath();
+    ctx.fill();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+/* Reset a základ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff;
+  color: #222;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Kontejner pro středění a šířku */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* HLAVIČKA */
+.header {
+  background-color: #e60000; /* podobná červené CNN */
+  color: white;
+  padding: 15px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 1.5rem;
+  user-select: none;
+}
+
+.logo img {
+  height: 30px;
+  width: 45px;
+  border-radius: 4px;
+  border: 1px solid white;
+  object-fit: cover;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 28px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: opacity 0.3s ease;
+}
+
+.nav a:hover {
+  opacity: 0.8;
+}
+
+/* HLAVNÍ OBSAH */
+.main-content {
+  flex: 1;
+  padding: 40px 0;
+}
+
+/* Úvodní sekce (hero) */
+.hero h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #e60000;
+  line-height: 1.1;
+}
+
+.hero p {
+  font-size: 1.15rem;
+  color: #444;
+  max-width: 720px;
+}
+
+/* Články */
+.articles {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+  gap: 30px;
+}
+
+.article {
+  background-color: #fafafa;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.article:hover {
+  box-shadow: 0 6px 20px rgb(230 0 0 / 0.3);
+  transform: translateY(-5px);
+}
+
+.article h2 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  color: #b30000;
+  font-weight: 700;
+}
+
+.article p {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* PATIČKA */
+.footer {
+  background-color: #f5f5f5;
+  color: #666;
+  font-size: 0.9rem;
+  padding: 16px 0;
+  text-align: center;
+  user-select: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .nav a {
+    margin-left: 15px;
+    font-size: 0.9rem;
+  }
+
+  .article {
+    padding: 20px 15px;
+  }
+}
