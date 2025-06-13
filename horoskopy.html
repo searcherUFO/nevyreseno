@@ -1,1 +1,220 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Objevte osud pomocí Fortune Teller AI – český chatbot, který předpovídá budoucnost, odpovídá na otázky a zvládne i jednoduché výpočty.">
+  <meta name="keywords" content="věštění, budoucnost, chatbot, AI, osud, předpověď, český chatbot, vědma, interaktivní věštění, predikce budoucnosti">
+  <meta name="author" content="Future Insights">
+  <meta property="og:title" content="Fortune Teller AI – Věštec budoucnosti">
+  <meta property="og:description" content="Zeptejte se na svou budoucnost a osud – AI chatbot věští, počítá i odpovídá.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tvujweb.cz"> <!-- Změň na svou doménu -->
+  <meta property="og:image" content="https://tvujweb.cz/og-image.jpg"> <!-- Nahraď obrázkem -->
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?">
+  <link rel="stylesheet" href="design.css">
+  <title>Fortune Teller AI – Věštec budoucnosti</title>
+      <style>
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1e0033, #000000);
+            color: #f3e5f5;
+            margin: 0;
+            padding: 0;
+            transition: background 0.5s, color 0.5s;
+        }
 
+        .dark-mode {
+            background: linear-gradient(135deg, #f3e5f5, #3d005c);
+            color: #1e0033;
+        }
+
+        .UFO-DarkModeButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #6a1b9a;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 10px #aa00ff;
+        }
+
+        logo1, logo2 {
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px #d500f9;
+        }
+
+        logo2 {
+            color: #e040fb;
+        }
+
+        .UFO-Div {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #ce93d8;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px;
+            max-width: 700px;
+            box-shadow: 0 0 15px #8e24aa;
+        }
+
+        .chatbox {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background-color: #4a148c;
+            box-shadow: 0 0 5px #aa00ff;
+        }
+
+        .user-message {
+            background-color: #7b1fa2;
+            text-align: right;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .messagesend {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ce93d8;
+            border-radius: 10px;
+            background: #f3e5f5;
+            color: #4a0072;
+            font-size: 1rem;
+        }
+
+        .send-button {
+            padding: 10px 20px;
+            background-color: #ba68c8;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 0 10px #d500f9;
+        }
+
+        h2 {
+            color: #e1bee7;
+        }
+
+        .UFO-LinkButton {
+            padding: 10px 20px;
+            background-color: #8e24aa;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px #d500f9; }
+            50% { box-shadow: 0 0 15px #d500f9; }
+            100% { box-shadow: 0 0 5px #d500f9; }
+        }
+
+        .UFO-Div, .send-button, .UFO-LinkButton {
+            animation: glow 2s infinite;
+        }
+    </style>
+</head>
+<body>
+  <!-- Zbytek HTML (včetně JS) zůstává naprosto nezměněn, jen přeložen -->
+  <button class="UFO-DarkModeButton" id="darkModeButton">Tmavý režim VYP</button>
+  <center><logo1>Vyhledávač "<logo2>UFO</logo2>"</logo1></center>
+  <center><logo1>AI Věštec</logo1></center>
+  <center>
+    <div class="UFO-Div" style="height:860px;">
+      <div class="chatbox" id="chatbox">
+        <div class="bot-message message">
+          AI Věštec je chatbot, který může generovat náhodné předpovědi budoucnosti, ale také počítá jednoduché matematické příklady a odpovídá na otázky.
+        </div>
+      </div>
+      <div class="input-container">
+        <input class="messagesend" type="text" id="userInput" autocomplete="off" placeholder="Zeptej se mě na cokoliv!" />
+        <button class="send-button" onclick="sendMessage()">Odeslat</button>
+      </div>
+    </div>
+  </center>
+  <center>
+    <div class="UFO-Div" style="height:330px;">
+      <center><h2>Klikni na tlačítko pro zkopírování odkazu na tento chat – příště můžeš pokračovat tam, kde jsi skončil/a.</h2></center>
+      <center><button class="UFO-LinkButton" onclick="copyURL()">Zkopírovat URL</button></center>
+    </div>
+  </center>
+  <script>
+function sendMessage() {
+  const input = document.getElementById("userInput");
+  const userText = input.value.trim();
+  if (!userText) return;
+
+  const chatbox = document.getElementById("chatbox");
+
+  const userMessage = document.createElement("div");
+  userMessage.classList.add("user-message", "message");
+  userMessage.innerText = userText;
+  chatbox.appendChild(userMessage);
+
+  const botMessage = document.createElement("div");
+  botMessage.classList.add("bot-message", "message");
+
+  let response = "";
+
+  const greetings = ["ahoj", "čau", "nazdar", "zdar", "hello", "hi", "čus"];
+  const lowerText = userText.toLowerCase();
+
+  if (greetings.some(greet => lowerText.includes(greet))) {
+    response = "Vítej, poutníku. Co tě přivádí k věštění?";
+  } else if (lowerText.match(/[\d+\-*/().]+/)) {
+    try {
+      const result = eval(userText);
+      response = `Výsledek tvého výpočtu je: ${result}`;
+    } catch (error) {
+      response = "Promiň, ale ten výpočet se mi nepodařilo vyřešit.";
+    }
+  } else if (lowerText.includes("jak") && lowerText.split(" ").length < 4) {
+    response = "Polož prosím úplnější otázku, abych ti mohl odpovědět.";
+  } else {
+    const predictions = [
+      "Brzy potkáš někoho, kdo změní tvůj život.",
+      "Ve tvé budoucnosti se rýsuje nečekané překvapení.",
+      "Buď opatrný/á s rozhodnutími během příštího týdne.",
+      "Tvé úsilí se brzy zúročí.",
+      "Měsíc ti přinese novou energii a inspiraci.",
+      "Někdo ti brzy sdělí důležitou pravdu.",
+      "Očekávej nečekané.",
+      "Čísla 3, 7 a 9 ti budou tento týden štěstím.",
+      "Tvůj osud je psán hvězdami – buď připraven/a na změnu.",
+      "Tvůj vnitřní hlas ti napoví správnou cestu."
+    ];
+    const randomIndex = Math.floor(Math.random() * predictions.length);
+    response = predictions[randomIndex];
+  }
+
+  botMessage.innerText = response;
+  chatbox.appendChild(botMessage);
+  input.value = "";
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+  </script>
+</body>
+</html>
