@@ -42,13 +42,6 @@
       margin-top: 15px;
       display: block;
     }
-    #nickname {
-      font-size: 1.2rem;
-    }
-    #title {
-      font-size: 1rem;
-      margin-top: 5px;
-    }
     input, textarea {
       width: 100%;
       padding: 10px;
@@ -138,16 +131,16 @@
     <div id="form-wrapper" style="display: none; margin-top: 20px;">
       <form id="comment-form">
         <label for="nickname">Tvoje přezdívka:</label>
-        <input type="text" id="nickname" placeholder="Např. Anonym123" required />
+        <input type="text" id="nickname" name="nickname" placeholder="Např. Anonym123" required />
 
         <label for="title">Nadpis příspěvku:</label>
-        <input type="text" id="title" placeholder="Např. Bouračka v Praze" required />
+        <input type="text" id="title" name="title" placeholder="Např. Bouračka v Praze" required />
 
         <label for="message">Popis události / komentář:</label>
-        <textarea id="message" rows="4" placeholder="Co jsi viděl/a, co tě znepokojuje, nebo jaký máš názor?" required></textarea>
+        <textarea id="message" name="message" rows="4" placeholder="Co jsi viděl/a, co tě znepokojuje, nebo jaký máš názor?" required></textarea>
 
         <label for="media">Přilož obrázek / video / audio (jpg, png, mp4, mp3):</label>
-        <input type="file" id="media" accept=".jpg,.jpeg,.png,.gif,.mp4,.mp3" />
+        <input type="file" id="media" name="media" accept=".jpg,.jpeg,.png,.gif,.mp4,.mp3" />
 
         <button type="submit">Odeslat příspěvek</button>
       </form>
@@ -186,7 +179,7 @@
       const nickname = form.nickname.value.trim();
       const title = form.title.value.trim();
       const message = form.message.value.trim();
-      const fileInput = document.getElementById('media');
+      const fileInput = form.media;
       const file = fileInput.files[0];
 
       if (!nickname || !title || !message) {
@@ -246,7 +239,6 @@
         const likedComments = JSON.parse(localStorage.getItem('likedComments') || '[]');
         const liked = likedComments.includes(key);
 
-        // Vytvoření HTML pro média
         let mediaHTML = '';
         if (comment.mediaUrl) {
           if (comment.mediaType.startsWith('image/')) {
