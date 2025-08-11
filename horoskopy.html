@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Horoskopy - náhodná předpověď</title>
+  <meta name="description" content="Horoskopy: náhodná předpověď — rychlá a zábavná česká stránka, která při každém kliknutí vygeneruje nový horoskop. Přátelské pro mobil i desktop, přístupné a optimalizované pro vyhledávače." />
+  <meta name="keywords" content="horoskopy, náhodný horoskop, předpověď, denní horoskop, český horoskop" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://nevyreseno.cz/horoskopy.html" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:title" content="Horoskopy: náhodná předpověď" />
+  <meta property="og:description" content="Klikni a zjisti svůj náhodný horoskop — krátké české předpovědi, ideální pro zábavu a sdílení." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://nevyreseno.cz/horoskopy.html" />
+  <meta property="og:image" content="https://nevyreseno.cz/horoskopy.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Structured data (JSON-LD) for better SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Horoskopy: náhodná předpověď",
+    "description": "Rychlá a zábavná česká stránka generující náhodné horoskopy jedním kliknutím.",
+    "url": "https://example.com/horoskopy-nahodna-predpoved",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Horoskopy.cz",
+      "url": "https://example.com"
+    }
+  }
+  </script>
+<script src="https://fpyf8.com/88/tag.min.js" data-zone="162196" async data-cfasync="false"></script>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7c3aed;--glass:rgba(255,255,255,0.04);--text:#e6eef8}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;color:var(--text);background:radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent), radial-gradient(1000px 400px at 90% 90%, rgba(14,165,233,0.06), transparent), var(--bg);}
+    .wrap{min-height:100%;display:grid;place-items:center;padding:32px}
+    .card{width:100%;max-width:900px;padding:28px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 10px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .header{display:flex;align-items:center;gap:16px}
+    .logo{width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:grid;place-items:center;font-weight:700;font-size:24px}
+    h1{margin:0;font-size:24px}
+    p.lead{margin:6px 0 0;color:rgba(230,238,248,0.85)}
+    .center{display:grid;grid-template-columns:1fr 200px;gap:20px;margin-top:22px;align-items:center}
+    .output{min-height:140px;padding:22px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;text-align:center;font-size:18px;line-height:1.5}
+    .controls{display:flex;flex-direction:column;align-items:center;gap:14px}
+    .btn-round{width:140px;height:140px;border-radius:999px;border:none;background:linear-gradient(180deg,var(--accent),#5b21b6);display:grid;place-items:center;font-size:36px;color:white;box-shadow:0 12px 30px rgba(124,58,237,0.25);cursor:pointer;transition:transform .18s ease, box-shadow .18s ease}
+    .btn-round:active{transform:scale(.96);box-shadow:0 8px 18px rgba(124,58,237,0.18)}
+    .hint{font-size:13px;opacity:.95}
+    .meta{display:flex;gap:10px;justify-content:center;margin-top:18px;font-size:13px;color:rgba(230,238,248,0.75)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media (max-width:720px){.center{grid-template-columns:1fr}.btn-round{width:96px;height:96px;font-size:28px}.output{min-height:120px;font-size:16px}}
+    .fade-in{animation:fadeIn .45s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <main class="wrap" id="main" role="main">
+    <article class="card" role="article" aria-labelledby="page-title">
+      <header class="header">
+        <div class="logo" aria-hidden="true">N</div>
+        <div>
+          <h1 id="page-title">Horoskopy: náhodná předpověď</h1>
+          <p class="lead">Klikni na kulaté tlačítko a získej český náhodný horoskop. Stránka je optimalizovaná pro vyhledávače a přístupná pro čtenáře i vyhledávače.</p>
+        </div>
+      </header>
+
+      <section class="center" aria-label="Generátor horoskopu">
+        <div class="output" id="output" aria-live="polite">Zatím žádný horoskop — klikni na tlačítko napravo.</div>
+
+        <div class="controls">
+          <button id="go" class="btn-round" aria-label="Zobrazit horoskop">✨</button>
+          <div class="hint">Klikni, nebo použij Enter / mezerník. Stiskni "R" pro rychlé nové.</div>
+        </div>
+      </section>
+
+      <footer class="meta" aria-label="Informace o stránce">
+        <div>© <time datetime="2025">2025</time> Horoskopy.cz</div>
+        <div>|</div>
+        <div><a href="/sitemap.xml" style="color:inherit;opacity:.9">Sitemap</a></div>
+      </footer>
+    </article>
+  </main>
+
+  <nav class="sr-only" aria-label="Rychlé odkazy">
+    <a href="#page-title">Přeskočit na obsah</a>
+  </nav>
+
+  <script>
+    (function(){
+      // SEO-friendly list of horoscopes (can be extended or localized)
+      const horoscopes = [
+        "Dnes je den, kdy malé rozhodnutí otevře nové dveře — naslouchej intuici a jednej s radostí.",
+        "Může přijít nečekaná příležitost v práci nebo ve vztazích. Neboj se ji prozkoumat, i když je to mimo komfort.",
+        "Věnuj pozornost svému zdraví — krátká pauza a procházka mohou výrazně zlepšit náladu.",
+        "Dnes je vhodné udělat pořádek — jak v prostoru, tak v hlavě. Uvidíš, jak se věci usadí.",
+        "Kreativita ti přinese drobné vítězství. Nečekej na perfektní podmínky, začni hned.",
+        "Někdo blízko tebe ocení tvou upřímnost. Otevřená konverzace přinese úlevu.",
+        "Finančně buď opatrný — malá obezřetnost dnes ušetří zítřek.",
+        "Dnes se může vrátit stará myšlenka nebo nápad — dej mu druhou šanci.",
+        "Zaměř se na detaily — drobná úprava může změnit výsledek projektu k lepšímu.",
+        "Překvapivá schůzka nebo zpráva přinese nové perspektivy. Buď připraven naslouchat.",
+        "Vztahy potřebují jemnost — jedna laskavá reakce může zlepšit den druhého člověka.",
+        "Odpočiň si a obnov energii — někdy nejlepší akce je neakce. Relax je produktivní."
+      ];
+
+      const btn = document.getElementById('go');
+      const out = document.getElementById('output');
+
+      function showRandom(){
+        const idx = Math.floor(Math.random()*horoscopes.length);
+        const text = horoscopes[idx];
+        out.classList.remove('fade-in');
+        void out.offsetWidth; // restart animation
+        out.textContent = text;
+        out.classList.add('fade-in');
+
+        // update document title for better UX and shareability
+        document.title = `Horoskopy: náhodná předpověď — ${text.slice(0,60)}...`;
+
+        // set share-friendly meta (optional: fallback if server supports dynamic tags)
+        try{
+          var desc = document.querySelector('meta[name="description"]');
+          if(desc) desc.setAttribute('content', text);
+        }catch(e){}
+      }
+
+      btn.addEventListener('click', showRandom);
+      btn.addEventListener('keydown', function(e){ if(e.code === 'Space' || e.code === 'Enter'){ e.preventDefault(); showRandom(); } });
+      document.addEventListener('keydown', function(e){ if(e.key.toLowerCase() === 'r') showRandom(); });
+
+      // Accessibility: focus management — focus output after generating
+      btn.addEventListener('click', function(){ out.focus(); });
+      out.setAttribute('tabindex','0');
+
+      // Optional: preload structured snippets into HTML for crawlers (hidden but indexable)
+      (function injectHidden(){
+        const list = document.createElement('div');
+        list.style.position='absolute'; list.style.left='-9999px'; list.style.width='1px'; list.style.height='1px';
+        list.setAttribute('aria-hidden','true');
+        list.innerHTML = `<ul>` + horoscopes.map(h => `<li>${h}</li>`).join('') + `</ul>`;
+        document.body.appendChild(list);
+      })();
+
+    })();
+  </script>
+</body>
+</html>
