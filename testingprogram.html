@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <title>BTC Batch Checker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0c0e10; color: #c9d1d9; font-family: monospace; }
+        .container { max-width: 900px; }
+        .card-custom { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
+        textarea { background-color: #0d1117 !important; color: #39ff14 !important; border: 1px solid #30363d !important; resize: none; width: 100%; height: 300px; padding: 10px; }
+        .btn-btc { background-color: #f7931a; border: none; font-weight: bold; color: white; padding: 12px; }
+        .btn-btc:hover { background-color: #d87d15; color: white; }
+        .total-box { border-left: 4px solid #f7931a; padding-left: 15px; }
+        .result-row:hover { background-color: #1c2128; }
+        .positive { color: #238636; font-weight: bold; }
+        .status { color: #8b949e; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="card-custom shadow-lg">
+        <h2 class="mb-4">BTC <span style="color:#f7931a">Batch</span> Checker</h2>
+        
+        <div class="mb-3">
+            <textarea id="addressInput" placeholder="Vložte adresy (jedna na řádek)..."></textarea>
+        </div>
+
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <button id="runBtn" class="btn btn-btc w-100" onclick="startCheck()">ZKONTROLOVAT ADRESY</button>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="total-box">
+                    <small class="text-muted">CELKOVÝ ZŮSTATEK</small>
+                    <h3 class="mb-0"><span id="totalBtc">0.00000000</span> BTC</h3>
+                </div>
+            </div>
+        </div>
+        <div id="statusInfo" class="mt-2 status"></div>
+    </div>
+
+    <div id="resultsArea" class="mt-4 d-none">
+        <div class="d-flex justify-content-between mb-2">
+            <h4 id="countLabel">Výsledky</h4>
+            <button class="btn btn-sm btn-outline-secondary" onclick="downloadCSV()">Stáhnout CSV</button>
+        </div>
+        <div class="card p-0 bg-transparent border-secondary">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="border-secondary">Adresa</th>
+                        <th class="border-secondary text-end">Zůstatek (BTC)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+async function startCheck() {
+    const input = document.getElementById('addressInput').value;
+    const addresses = input.split('\n').map(a => a.trim()).filter(a => a.length > 5);
+    
+    if (addresses.length === 0) return alert("Vložte adresy!");
+
+    const btn = document.getElementById('runBtn');
+    const list = document.getElementById('resultBody');
+    const totalDisp = document.getElementById('totalBtc');
+    const status = document.getElementById('statusInfo');
+    
+    btn.disabled = true;
+    document.getElementById('resultsArea').classList.remove('d-none');
+    list.innerHTML = '';
+    let totalSats = 0;
+    
+    // Blockchain.info zvládá cca 200 adres v jednom dotazu
+    const chunkSize = 200;
+    const totalChunks = Math.ceil(addresses.length / chunkSize);
+
+    for (let i = 0; i < addresses.length; i += chunkSize) {
+        const chunk = addresses.slice(i, i + chunkSize);
+        const currentChunkNum = Math.floor(i / chunkSize) + 1;
+        
+        status.innerText = `Zpracovávám dávku ${currentChunkNum} z ${totalChunks}...`;
+
+        try {
+            // Používáme multiaddr endpoint pro hromadné stažení
+            const res = await fetch(`https://blockchain.info/multiaddr?active=${chunk.join('|')}&cors=true`);
+            const data = await res.json();
+
+            if (data.addresses) {
+                data.addresses.forEach(addrData => {
+                    const btc = (addrData.final_balance / 100000000).toFixed(8);
+                    const isPositive = addrData.final_balance > 0 ? 'positive' : '';
+                    
+                    const row = `<tr class="result-row font-monospace">
+                        <td class="small text-muted">${addrData.address}</td>
+                        <td class="text-end ${isPositive}">${btc}</td>
+                    </tr>`;
+                    list.insertAdjacentHTML('beforeend', row);
+                    
+                    totalSats += addrData.final_balance;
+                });
+                totalDisp.innerText = (totalSats / 100000000).toFixed(8);
+            }
+        } catch (e) {
+            console.error("Chyba v dávce", e);
+            chunk.forEach(a => {
+                list.insertAdjacentHTML('beforeend', `<tr><td class="text-danger small">${a}</td><td class="text-end text-danger">Chyba</td></tr>`);
+            });
+        }
+
+        // Malý timeout mezi dávkami, aby nás server neodpojil
+        if (totalChunks > 1) await new Promise(r => setTimeout(r, 1000));
+    }
+
+    status.innerText = `Kontrola dokončena. Celkem zkontrolováno ${addresses.length} adres.`;
+    btn.disabled = false;
+}
+
+function downloadCSV() {
+    let csv = "Adresa,Zustatek_BTC\n";
+    document.querySelectorAll('#resultBody tr').forEach(row => {
+        const cols = row.querySelectorAll('td');
+        csv += `${cols[0].innerText},${cols[1].innerText}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `btc_export_${Date.now()}.csv`;
+    a.click();
+}
+</script>
+</body>
+</html>
