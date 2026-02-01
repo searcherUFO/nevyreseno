@@ -2,44 +2,46 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Extreme Speed</title>
+    <title>ETH Reliable Turbo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #06090f; color: #c9d1d9; font-family: 'Inter', sans-serif; }
-        .card-custom { background-color: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 25px; }
-        textarea { background-color: #010409 !important; color: #58a6ff !important; border: 1px solid #30363d !important; font-family: 'Courier New', monospace; height: 300px; font-size: 13px; }
-        .eth-blue { color: #1f6feb; font-weight: bold; }
-        .total-number { font-size: 2.5rem; color: #238636; text-shadow: 0 0 10px rgba(35, 134, 54, 0.3); }
-        .speed-indicator { color: #f7931a; font-size: 0.8rem; font-weight: bold; }
+        body { background-color: #0b0e14; color: #adbac7; font-family: 'Segoe UI', sans-serif; }
+        .card-custom { background-color: #22272e; border: 1px solid #444c56; border-radius: 12px; padding: 25px; }
+        textarea { background-color: #1c2128 !important; color: #539bf5 !important; border: 1px solid #444c56 !important; font-family: monospace; height: 300px; font-size: 0.9rem; }
+        .eth-val { color: #57ab5a; font-weight: bold; text-align: right; }
+        .total-number { font-size: 2.2rem; color: #539bf5; font-weight: bold; }
+        .status-msg { font-size: 0.8rem; color: #768390; }
     </style>
 </head>
 <body>
 
 <div class="container py-5">
-    <div class="card-custom shadow-lg">
-        <div class="row align-items-center mb-4">
-            <div class="col-md-6">
-                <h2 class="mb-0">ETH <span class="eth-blue">Extreme</span> Speed</h2>
-                <div id="statusInfo" class="speed-indicator mt-1">PŘIPRAVENO K BLESKOVÉMU SKENU</div>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card-custom shadow-lg">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0 fw-bold">ETH <span style="color:#539bf5">Reliable</span> Batcher</h2>
+                    <div class="text-end">
+                        <div class="small fw-bold text-uppercase">Součet BTC</div>
+                        <div class="total-number"><span id="totalEth">0.000000</span> <small class="fs-6">ETH</small></div>
+                    </div>
+                </div>
+
+                <textarea id="addressInput" class="form-control mb-4" placeholder="Vložte adresy (0x...)"></textarea>
+
+                <button id="runBtn" class="btn btn-primary w-100 py-3 fw-bold" onclick="runReliable()">
+                    ZKONTROLOVAT VŠE (Optimalizovaná rychlost)
+                </button>
+                <div id="statusInfo" class="status-msg text-center mt-3">Připraveno.</div>
             </div>
-            <div class="col-md-6 text-end">
-                <div class="small text-muted fw-bold">CELKOVÝ ZŮSTATEK</div>
-                <div class="total-number"><span id="totalEth">0.000000</span> <small style="font-size: 1rem">ETH</small></div>
+
+            <div id="resultsArea" class="d-none mt-4">
+                <div class="card-custom p-0 overflow-hidden border-secondary">
+                    <table class="table table-dark table-hover mb-0">
+                        <tbody id="resultBody"></tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-
-        <textarea id="addressInput" class="form-control mb-4" placeholder="Vlož tisíce adres pro okamžitou kontrolu..."></textarea>
-
-        <button id="runBtn" class="btn btn-primary w-100 py-3 fw-bold shadow" onclick="processExtreme()">
-            SPUSTIT EXTRÉMNÍ SKEN (3 PARALELNÍ VLÁKNA)
-        </button>
-    </div>
-
-    <div id="resultsArea" class="d-none mt-4">
-        <div class="table-responsive">
-            <table class="table table-dark table-hover border-secondary">
-                <tbody id="resultBody"></tbody>
-            </table>
         </div>
     </div>
 </div>
@@ -47,43 +49,34 @@
 <script>
 const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
 
-async function processExtreme() {
+async function runReliable() {
     const input = document.getElementById('addressInput').value;
     const addresses = input.split('\n')
         .map(a => a.trim().toLowerCase())
         .filter(a => a.startsWith('0x') && a.length === 42);
 
-    if (addresses.length === 0) return alert("Vložte ETH adresy!");
+    if (addresses.length === 0) return alert("Vložte platné ETH adresy!");
 
     const btn = document.getElementById('runBtn');
     const list = document.getElementById('resultBody');
     const totalDisp = document.getElementById('totalEth');
     const status = document.getElementById('statusInfo');
     
-    // UI Setup
     btn.disabled = true;
     document.getElementById('resultsArea').classList.remove('d-none');
     list.innerHTML = '';
     let totalWei = BigInt(0);
-    const startTime = performance.now();
 
-    // NASTAVENÍ RYCHLOSTI
-    const BATCH_SIZE = 150; // Velikost jedné dávky
-    const PARALLEL_THREADS = 3; // Kolik dávek se posílá najednou
+    // NASTAVENÍ: 100 adres na balík je pro Alchemy free účet nejstabilnější maximum
+    const BATCH_SIZE = 100; 
 
-    // Rozdělení adres do dávek
-    const chunks = [];
     for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-        chunks.push(addresses.slice(i, i + BATCH_SIZE));
-    }
+        const chunk = addresses.slice(i, i + BATCH_SIZE);
+        status.innerText = `Skenuji dávku ${Math.floor(i/BATCH_SIZE)+1} z ${Math.ceil(addresses.length/BATCH_SIZE)}...`;
 
-    let completedChunks = 0;
-
-    // Funkce pošle jednu dávku
-    const sendBatch = async (chunk, chunkIndex) => {
         const payload = chunk.map((addr, idx) => ({
             jsonrpc: "2.0",
-            id: chunkIndex * BATCH_SIZE + idx,
+            id: i + idx,
             method: "eth_getBalance",
             params: [addr, "latest"]
         }));
@@ -94,41 +87,44 @@ async function processExtreme() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+
+            if (response.status === 429) {
+                status.innerText = "CHYBA: Alchemy tě dočasně zablokovalo (příliš vysoká rychlost). Čekám 5 sekund...";
+                await new Promise(r => setTimeout(r, 5000));
+                i -= BATCH_SIZE; // Zkusit tuto dávku znovu
+                continue;
+            }
+
             const data = await response.json();
             
-            let htmlBatch = "";
+            // Pokud server vrátí JSON s chybou
+            if (!Array.isArray(data)) {
+                 throw new Error("Server neodpovídá na hromadný dotaz");
+            }
+
+            let htmlChunk = "";
             data.forEach((res, idx) => {
                 if (res.result) {
                     const wei = BigInt(res.result);
                     totalWei += wei;
                     const eth = (Number(wei) / 1e18).toFixed(6);
-                    htmlBatch += `<tr class="border-secondary"><td class="small font-monospace ps-3 text-muted">${chunk[idx]}</td><td class="text-end pe-4 fw-bold text-success">${eth} ETH</td></tr>`;
+                    htmlChunk += `<tr class="border-secondary"><td class="ps-3 py-2 font-monospace small text-muted text-break">${chunk[idx]}</td><td class="text-end pe-4 py-2 eth-val">${eth} ETH</td></tr>`;
                 }
             });
 
-            list.insertAdjacentHTML('beforeend', htmlBatch);
+            list.insertAdjacentHTML('beforeend', htmlChunk);
             totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
-            
-            completedChunks++;
-            status.innerText = `RYCHLOST: PROBÍHÁ PARALELNÍ DOTAZ (${completedChunks} z ${chunks.length} dávek hotovo)`;
 
         } catch (e) {
-            console.error(e);
+            console.error("Chyba:", e);
+            status.innerText = "Chyba při komunikaci s Alchemy. Zkontroluj klíč nebo internet.";
         }
-    };
 
-    // PARALELNÍ SPOUŠTĚNÍ
-    // Místo čekání na každou dávku, spustíme několik vln najednou
-    for (let i = 0; i < chunks.length; i += PARALLEL_THREADS) {
-        const pool = [];
-        for (let j = 0; j < PARALLEL_THREADS && (i + j) < chunks.length; j++) {
-            pool.push(sendBatch(chunks[i + j], i + j));
-        }
-        await Promise.all(pool); // Čekáme jen na dokončení aktuální vlny 3 dotazů
+        // Velmi krátká pauza (200ms) mezi balíky pro "vychladnutí" limitu
+        await new Promise(r => setTimeout(r, 200));
     }
 
-    const duration = ((performance.now() - startTime) / 1000).toFixed(2);
-    status.innerHTML = `<span class="text-success">✔ HOTOVO! ${addresses.length} ADRES ZA ${duration} s.</span>`;
+    status.innerText = "HOTOVO. Všechny adresy zkontrolovány.";
     btn.disabled = false;
 }
 </script>
