@@ -2,55 +2,52 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Checker Fix</title>
+    <title>ETH Pro - Alchemy Edition</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0f111a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
-        .card-custom { background-color: #1a1c2e; border: 1px solid #2d2f4d; border-radius: 15px; padding: 25px; }
-        textarea { background-color: #0a0b14 !important; color: #00d4ff !important; border: 1px solid #3d4063 !important; font-family: 'Courier New', monospace; height: 250px; }
-        .eth-color { color: #627eea; }
-        .balance-val { color: #00ff88; font-weight: bold; text-align: right; }
-        .status-msg { font-size: 0.85em; color: #8b949e; margin-top: 10px; }
+        body { background-color: #0b0e11; color: #d1d5db; font-family: 'Inter', system-ui, sans-serif; }
+        .card-custom { background-color: #151921; border: 1px solid #2d333b; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        textarea { background-color: #0d1117 !important; color: #82aaff !important; border: 1px solid #30363d !important; font-family: 'Courier New', monospace; height: 250px; font-size: 0.9rem; }
+        .eth-val { color: #00ff9d; font-weight: bold; font-family: monospace; }
+        .total-box { border-bottom: 2px solid #627eea; padding-bottom: 10px; margin-bottom: 20px; }
+        .eth-blue { color: #627eea; }
+        .status-badge { font-size: 0.7rem; vertical-align: middle; margin-left: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <h2 class="text-center mb-4 fw-bold text-uppercase tracking-widest"><span class="eth-color">ETH</span> Balance Tracker</h2>
-
-            <div class="card-custom mb-4 shadow-lg">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">1. RPC ADRESA (Zadej svůj Alchemy ETH link pro max. rychlost)</label>
-                    <input type="text" id="rpcUrl" class="form-control bg-dark text-white border-secondary" 
-                        value="https://eth.llamarpc.com">
-                    <div class="form-text text-muted">Výchozí: LlamaRPC (funkční veřejná brána).</div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">2. ETH ADRESY (např. 0x71C...)</label>
-                    <textarea id="addressInput" class="form-control" placeholder="0x..."></textarea>
-                </div>
-
-                <button id="runBtn" class="btn btn-primary w-100 fw-bold py-3" onclick="checkEth()">SKEΝOVAT ADRESY</button>
-                <div id="statusInfo" class="status-msg text-center"></div>
+        <div class="col-lg-10">
+            <div class="text-center mb-5">
+                <h1 class="display-6 fw-bold"><span class="eth-blue">ETH</span> Professional Batch Checker</h1>
+                <p class="text-muted small">Tvůj uzel: <span class="badge bg-dark border border-secondary font-monospace">eth-mainnet.g.alchemy.com</span></p>
             </div>
 
-            <div id="resultsArea" class="d-none">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">Výsledky</h4>
+            <div class="card-custom mb-4">
+                <div class="total-box d-flex justify-content-between align-items-end">
+                    <div>
+                        <label class="form-label small text-uppercase text-secondary fw-bold">Vlož Ethereum adresy (0x...)</label>
+                    </div>
                     <div class="text-end">
-                        <small class="text-muted">CELKEM:</small>
-                        <h2 class="eth-color mb-0"><span id="totalEth">0.0000</span> ETH</h2>
+                        <div class="small text-secondary fw-bold">CELKOVÝ ZŮSTATEK</div>
+                        <h2 class="mb-0 eth-blue"><span id="totalEth">0.000000</span> ETH</h2>
                     </div>
                 </div>
-                <div class="card-custom p-0 overflow-hidden border-0">
-                    <table class="table table-dark table-striped mb-0">
+
+                <textarea id="addressInput" class="form-control mb-4" placeholder="0x0000000000000000000000000000000000000000"></textarea>
+                
+                <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold" onclick="processEth()">SPUSTIT ANALÝZU</button>
+                <div id="statusInfo" class="text-center mt-3 small text-muted"></div>
+            </div>
+
+            <div id="resultsArea" class="d-none mt-4">
+                <div class="card-custom p-0 overflow-hidden">
+                    <table class="table table-dark table-hover mb-0">
                         <thead>
                             <tr>
-                                <th class="ps-4">Adresa</th>
-                                <th class="text-end pe-4">Zůstatek</th>
+                                <th class="ps-4 text-muted small">ADRESA</th>
+                                <th class="text-end pe-4 text-muted small">ZŮSTATEK (ETH)</th>
                             </tr>
                         </thead>
                         <tbody id="resultBody"></tbody>
@@ -62,21 +59,23 @@
 </div>
 
 <script>
-async function checkEth() {
-    const rpcUrl = document.getElementById('rpcUrl').value.trim();
+// Tvůj Alchemy link
+const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
+
+async function processEth() {
     const input = document.getElementById('addressInput').value;
-    // Očistíme adresy - musí začínat 0x a mít správnou délku
     const addresses = input.split('\n')
-        .map(a => a.trim().toLowerCase())
+        .map(a => a.trim())
         .filter(a => a.startsWith('0x') && a.length === 42);
 
-    if (addresses.length === 0) return alert("Vložte platné ETH adresy začínající 0x (délka 42 znaků)!");
+    if (addresses.length === 0) return alert("Vložte platné Ethereum adresy začínající 0x!");
 
     const btn = document.getElementById('runBtn');
     const list = document.getElementById('resultBody');
     const totalDisp = document.getElementById('totalEth');
     const status = document.getElementById('statusInfo');
     
+    // UI Reset
     btn.disabled = true;
     document.getElementById('resultsArea').classList.remove('d-none');
     list.innerHTML = '';
@@ -87,7 +86,8 @@ async function checkEth() {
         status.innerText = `Kontroluji ${i + 1} z ${addresses.length}...`;
 
         try {
-            const response = await fetch(rpcUrl, {
+            // Posíláme JSON-RPC dotaz na tvůj Alchemy link
+            const response = await fetch(ALCHEMY_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -101,31 +101,43 @@ async function checkEth() {
             const data = await response.json();
 
             if (data.result) {
+                // Převod z hexadecimálního Wei na čitelné ETH
                 const wei = BigInt(data.result);
                 totalWei += wei;
-                const ethVal = (Number(wei) / 1e18).toFixed(6);
+                
+                // Přehledné formátování (18 nul dolu)
+                const ethValue = (Number(wei) / 1e18).toFixed(6);
 
                 list.insertAdjacentHTML('beforeend', `
-                    <tr>
-                        <td class="ps-4 font-monospace"><small>${addr}</small></td>
-                        <td class="text-end pe-4 balance-val">${ethVal} ETH</td>
+                    <tr class="border-secondary">
+                        <td class="ps-4 font-monospace small" style="color:#9ca3af">${addr}</td>
+                        <td class="text-end pe-4 eth-val">${ethValue} ETH</td>
                     </tr>
                 `);
+                
+                // Průběžná aktualizace celkového součtu
                 totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
+            } else if (data.error) {
+                throw new Error(data.error.message);
             } else {
-                throw new Error("Neplatný výsledek");
+                throw new Error("Neplatná odpověď");
             }
 
         } catch (e) {
-            console.error("Chyba:", e);
-            list.insertAdjacentHTML('beforeend', `<tr><td class="ps-4 text-danger">${addr}</td><td class="text-end pe-4 text-danger">Error</td></tr>`);
+            console.error(e);
+            list.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td class="ps-4 text-danger small">${addr}</td>
+                    <td class="text-end pe-4 text-danger small font-bold">Chyba API (Ověř uzel v Alchemy)</td>
+                </tr>
+            `);
         }
-
-        // Malá pauza proti zablokování (u Alchemy můžeš nastavit na 0)
-        await new Promise(r => setTimeout(r, 200));
+        
+        // Alchemy povoluje vysokou rychlost, tak jen symbolická pauza 50ms
+        await new Promise(r => setTimeout(r, 50));
     }
 
-    status.innerText = "Hotovo.";
+    status.innerText = "Všechny adresy byly zkontrolovány.";
     btn.disabled = false;
 }
 </script>
