@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>ULTRA BTC Gen - StayAwake Parallel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #000; color: #00ff41; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .panel { background: #0a0a0a; border: 1px solid #00ff41; padding: 40px; border-radius: 5px; width: 500px; box-shadow: 0 0 40px rgba(0,255,65,0.05); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .stats { font-size: 10px; color: #008822; margin-top: 5px; text-transform: uppercase; }
+        input { background: #000; border: 1px solid #00ff41; color: #00ff41; padding: 12px; width: 100%; box-sizing: border-box; font-size: 20px; text-align: center; margin-bottom: 20px; }
+        .btn { border: 1px solid #00ff41; padding: 15px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; transition: 0.2s; }
+        .btn-gen { background: #00ff41; color: #000; width: 100%; border: none; }
+        .btn-copy { background: transparent; color: #00ff41; display: none; }
+        .btn:hover { opacity: 0.8; box-shadow: 0 0 10px #00ff41; }
+        .progress-container { background: #050505; border: 1px solid #111; height: 4px; margin: 20px 0; }
+        .progress-bar { background: #00ff41; height: 100%; width: 0%; transition: width 0.1s; }
+        #log { font-size: 12px; text-align: center; margin-top: 10px; height: 1.2em; }
+        .wake-status { font-size: 9px; margin-top: 15px; color: #555; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="panel">
+    <div style="font-size: 10px; margin-bottom: 20px;">SYSTEM: TURBO_PARALLEL_STAY_AWAKE</div>
+    
+    <label style="font-size: 10px;">POŽADOVANÝ POČET PENĚŽENEK</label>
+    <input type="number" id="count" value="10000" min="1" max="1000000">
+    
+    <div class="stats" id="coreCount">DETEKCE JADER...</div>
+    <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
+    
+    <div id="log">SYSTÉM PŘIPRAVEN</div>
+
+    <button id="genBtn" class="btn btn-gen" onclick="masterGenerate()">SPUSTIT BATCH GENERACI</button>
+    
+    <div class="grid">
+        <button id="c1" class="btn btn-copy" onclick="copy('addr')">Kopírovat Adresy</button>
+        <button id="c2" class="btn btn-copy" onclick="copy('full')">Kopírovat Vše</button>
+    </div>
+    <div id="wakeStatus" class="wake-status">WAKE_LOCK: INACTIVE</div>
+</div>
+
+<script id="worker-code" type="text/javascript-worker">
+    self.onmessage = async function(e) {
+        const { count } = e.data;
+        importScripts('https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js');
+        let batch = [];
+        for (let i = 0; i < count; i++) {
+            const entropy = ethers.randomBytes(16);
+            const mnemonic = ethers.Mnemonic.fromEntropy(entropy);
+            const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase, "", "m/84'/0'/0'/0/0");
+            batch.push({ pk: wallet.privateKey, mn: mnemonic.phrase });
+            if (i % 50 === 0) self.postMessage({ type: 'progress', step: 50 });
+        }
+        self.postMessage({ type: 'done', data: batch });
+    };
+</script>
+
+<script>
+    // --- BTC BECH32 LOGIC ---
+    const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+    const polymod = v => {
+        let chk = 1; for (let x of v) {
+            let top = chk >> 25; chk = ((chk & 0x1ffffff) << 5) ^ x;
+            for (let i = 0; i < 5; i++) chk ^= ((top >> i) & 1) ? [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3][i] : 0;
+        } return chk;
+    };
+    const hrpExp = h => [...h].reduce((a, c) => [...a, c.charCodeAt(0) >> 5], []).concat([0]).concat([...h].map(c => c.charCodeAt(0) & 31));
+    const encodeBech32 = (h, d) => {
+        let v = hrpExp(h).concat(d).concat([0,0,0,0,0,0]);
+        let mod = polymod(v) ^ 1;
+        let ck = Array.from({length:6}, (_,i) => (mod >> (5*(5-i))) & 31);
+        return h + '1' + d.concat(ck).map(x => CHARSET[x]).join('');
+    };
+    const conv = (d, f, t, p) => {
+        let a = 0, b = 0, r = [];
+        for (let v of d) { a = (a << f) | v; b += f; while (b >= t) { b -= t; r.push((a >> b) & ((1 << t) - 1)); } }
+        if (p && b > 0) r.push((a << (to - bits)) & ((1 << to) - 1)); // Fixed bit manipulation
+        return r;
+    };
+    // Oprava drobné chyby v convertBits pro stabilitu
+    const convFixed = (data, from, to, pad) => {
+        let acc = 0, bits = 0, ret = [];
+        for (let v of data) {
+            acc = (acc << from) | v;
+            bits += from;
+            while (bits >= to) { bits -= to; ret.push((acc >> bits) & ((1 << to) - 1)); }
+        }
+        if (pad && bits > 0) ret.push((acc << (to - bits)) & ((1 << to) - 1));
+        return ret;
+    };
+
+    const cores = navigator.hardwareConcurrency || 4;
+    document.getElementById('coreCount').innerText = `AKTIVNÍ VLÁKNA: ${cores} | VÝKON: MAX`;
+
+    let finalAddr = ""; let finalFull = "";
+    let wakeLock = null;
+
+    // Funkce pro zabránění uspání
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                document.getElementById('wakeStatus').innerText = "WAKE_LOCK: ACTIVE (DEVICE WON'T SLEEP)";
+                document.getElementById('wakeStatus').style.color = "#00ff41";
+            }
+        } catch (err) {
+            console.log("Wake Lock failed:", err);
+        }
+    }
+
+    async function masterGenerate() {
+        const total = parseInt(document.getElementById('count').value);
+        const log = document.getElementById('log');
+        const countPerWorker = Math.floor(total / cores);
+        
+        document.getElementById('genBtn').disabled = true;
+        await requestWakeLock(); // Aktivujeme ochranu proti uspání
+        
+        log.innerText = "SPOUŠTÍM PARALELNÍ CLUSTER...";
+        let completed = 0; let progress = 0; let all = [];
+
+        const blob = new Blob([document.getElementById('worker-code').textContent], {type: 'text/javascript'});
+        const url = URL.createObjectURL(blob);
+
+        for (let i = 0; i < cores; i++) {
+            const w = new Worker(url);
+            w.postMessage({ count: (i === cores - 1) ? total - (countPerWorker * i) : countPerWorker });
+            w.onmessage = e => {
+                if (e.data.type === 'progress') {
+                    progress += e.data.step;
+                    document.getElementById('bar').style.width = Math.min(100, Math.round((progress/total)*100)) + "%";
+                    log.innerText = `BĚŽÍ: ${progress} / ${total}`;
+                }
+                if (e.data.type === 'done') {
+                    all = all.concat(e.data.data);
+                    completed++;
+                    if (completed === cores) finalize(all);
+                    w.terminate();
+                }
+            };
+        }
+    }
+
+    function finalize(wallets) {
+        document.getElementById('log').innerText = "FINÁLNÍ BOT_PROCESSING...";
+        let a = []; let f = [];
+        wallets.forEach(w => {
+            const pubKey = ethers.SigningKey.computePublicKey(w.pk, true);
+            const h160 = ethers.ripemd160(ethers.sha256(pubKey));
+            const btcAddr = encodeBech32('bc', [0].concat(convFixed(ethers.getBytes(h160), 8, 5, true)));
+            a.push(btcAddr); f.push(`${btcAddr}:${w.mn}`);
+        });
+        finalAddr = a.join('\n'); finalFull = f.join('\n');
+        
+        document.getElementById('log').innerText = "HOTOVO. SYSTÉM UVOLNĚN.";
+        document.getElementById('c1').style.display = "block";
+        document.getElementById('c2').style.display = "block";
+        document.getElementById('genBtn').disabled = false;
+        
+        // Uvolníme zámek obrazovky po dokončení
+        if (wakeLock) {
+            wakeLock.release().then(() => {
+                wakeLock = null;
+                document.getElementById('wakeStatus').innerText = "WAKE_LOCK: INACTIVE";
+                document.getElementById('wakeStatus').style.color = "#555";
+            });
+        }
+    }
+
+    function copy(t) {
+        navigator.clipboard.writeText(t === 'addr' ? finalAddr : finalFull);
+        alert("ZKOPIROVÁNO!");
+    }
+</script>
+</body>
+</html>
