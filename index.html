@@ -2,53 +2,67 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Server-Side BTC Cluster</title>
+    <title>Cloud BTC Cluster</title>
     <style>
-        body { font-family: sans-serif; background: #111; color: white; text-align: center; padding: 50px; }
-        .box { border: 1px solid #444; padding: 30px; border-radius: 10px; display: inline-block; }
-        button { padding: 10px 20px; cursor: pointer; background: #f7931a; border: none; font-weight: bold; margin: 5px; }
-        #status { margin: 20px 0; color: #888; }
+        body { font-family: monospace; background: #050505; color: #00ff41; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { border: 2px solid #00ff41; padding: 40px; border-radius: 5px; background: #000; box-shadow: 0 0 30px #00ff4133; text-align: center; }
+        input { background: #111; border: 1px solid #00ff41; color: #00ff41; padding: 10px; width: 100px; text-align: center; margin-bottom: 20px; font-size: 18px; }
+        .btn { padding: 15px 25px; cursor: pointer; border: none; font-weight: bold; text-transform: uppercase; margin: 5px; font-size: 13px; }
+        .btn-gen { background: #00ff41; color: #000; width: 100%; margin-bottom: 20px; }
+        .btn-copy { background: transparent; border: 1px solid #00ff41; color: #00ff41; display: none; }
+        .btn:hover { opacity: 0.8; box-shadow: 0 0 10px #00ff41; }
+        #status { font-size: 12px; margin: 15px 0; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h1>SERVER BATCH GEN</h1>
-    <input type="number" id="count" value="1000" style="padding: 10px; width: 80px;">
-    <button onclick="requestServer()">SPUSTIT PŘEZ SERVER</button>
-    
+    <div style="font-size: 10px; margin-bottom: 10px; opacity: 0.7;">SERVER_API_POWERED</div>
+    <input type="number" id="count" value="1000">
     <div id="status">PŘIPRAVEN</div>
     
-    <button id="copy1" style="display:none" onclick="copy('addr')">KOPÍROVAT ADRESY</button>
-    <button id="copy2" style="display:none" onclick="copy('full')">KOPÍROVAT KOMPLET</button>
+    <button id="genBtn" class="btn btn-gen" onclick="callAPI()">Spustit generování přes server</button>
+    
+    <div id="controls">
+        <button id="c1" class="btn btn-copy" onclick="copy('addr')">Zkopírovat pouze adresy</button>
+        <button id="c2" class="btn btn-copy" onclick="copy('full')">Zkopírovat kompletní seznam</button>
+    </div>
 </div>
 
 <script>
-    let localCache = [];
+    let cache = [];
 
-    async function requestServer() {
+    async function callAPI() {
         const count = document.getElementById('count').value;
         const status = document.getElementById('status');
+        const genBtn = document.getElementById('genBtn');
         
         status.innerText = "SERVER PRACUJE... ČEKEJTE";
-        
+        genBtn.disabled = true;
+
         try {
-            // Volání tvého API serveru
-            const response = await fetch(`/api/generate?count=${count}`);
-            localCache = await response.json();
+            // Požadavek na serverové API
+            const response = await fetch(`/api/gen?count=${count}`);
+            cache = await response.json();
             
-            status.innerText = "HOTOVO! DATA PŘIJATA ZE SERVERU.";
-            document.getElementById('copy1').style.display = "inline-block";
-            document.getElementById('copy2').style.display = "inline-block";
+            status.innerText = "HOTOVO: " + cache.length + " PENĚŽENEK PŘIJATO";
+            document.getElementById('c1').style.display = "inline-block";
+            document.getElementById('c2').style.display = "inline-block";
         } catch (e) {
             status.innerText = "CHYBA SPOJENÍ SE SERVEREM";
+        } finally {
+            genBtn.disabled = false;
         }
     }
 
     function copy(type) {
-        // Tady proběhne rychlé kódování do BTC formátu (pro šetření přenosu dat)
-        // (Zde by byl vložen ten bech32 logic z předchozích verzí)
-        alert("Kopíruji data...");
+        const text = (type === 'addr') 
+            ? cache.map(w => w.a).join('\n') 
+            : cache.map(w => `${w.a}:${w.m}`).join('\n');
+            
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Zkopírováno do schránky!");
+        });
     }
 </script>
 
