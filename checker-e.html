@@ -2,62 +2,55 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Batch Checker</title>
+    <title>ETH Checker Fix</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', sans-serif; }
-        .card-custom { background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 25px; }
-        textarea { background-color: #0d1117 !important; color: #82aaff !important; border: 1px solid #30363d !important; font-family: 'Courier New', monospace; height: 250px; }
-        .eth-blue { color: #627eea; }
-        .btn-eth { background-color: #627eea; border: none; font-weight: bold; color: white; transition: 0.3s; }
-        .btn-eth:hover { background-color: #4860b9; color: white; }
-        .balance-val { color: #2ecc71; font-weight: bold; text-align: right; }
-        .loader { width: 18px; height: 18px; border: 2px solid #fff; border-bottom-color: transparent; border-radius: 50%; display: none; animation: rotation 1s linear infinite; margin-right: 10px; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { background-color: #0f111a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+        .card-custom { background-color: #1a1c2e; border: 1px solid #2d2f4d; border-radius: 15px; padding: 25px; }
+        textarea { background-color: #0a0b14 !important; color: #00d4ff !important; border: 1px solid #3d4063 !important; font-family: 'Courier New', monospace; height: 250px; }
+        .eth-color { color: #627eea; }
+        .balance-val { color: #00ff88; font-weight: bold; text-align: right; }
+        .status-msg { font-size: 0.85em; color: #8b949e; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <div class="text-center mb-5">
-                <h1 class="display-5 fw-bold"><span class="eth-blue">Ethereum</span> Balance Pro</h1>
-                <p class="text-muted">Hromadná kontrola ETH zůstatků (Batch JSON-RPC)</p>
-            </div>
+        <div class="col-lg-8">
+            <h2 class="text-center mb-4 fw-bold text-uppercase tracking-widest"><span class="eth-color">ETH</span> Balance Tracker</h2>
 
-            <div class="card-custom mb-4">
+            <div class="card-custom mb-4 shadow-lg">
                 <div class="mb-3">
-                    <label class="form-label small text-uppercase fw-bold">RPC API URL (Alchemy nebo Cloudflare)</label>
+                    <label class="form-label small fw-bold">1. RPC ADRESA (Zadej svůj Alchemy ETH link pro max. rychlost)</label>
                     <input type="text" id="rpcUrl" class="form-control bg-dark text-white border-secondary" 
-                        value="https://cloudflare-eth.com">
-                    <div class="form-text text-muted">Výchozí je Cloudflare (zdarma). Pro velké objemy vlož svůj Alchemy ETH link.</div>
+                        value="https://eth.llamarpc.com">
+                    <div class="form-text text-muted">Výchozí: LlamaRPC (funkční veřejná brána).</div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label small text-uppercase fw-bold">Ethereum adresy (0x...)</label>
-                    <textarea id="addressInput" class="form-control" placeholder="0x71C765...&#10;0xAA77..."></textarea>
+                    <label class="form-label small fw-bold">2. ETH ADRESY (např. 0x71C...)</label>
+                    <textarea id="addressInput" class="form-control" placeholder="0x..."></textarea>
                 </div>
 
-                <button id="runBtn" class="btn btn-eth w-100 btn-lg" onclick="checkEthBalances()">
-                    <span class="loader" id="loader"></span> ZKONTROLOVAT ETH ZŮSTATKY
-                </button>
+                <button id="runBtn" class="btn btn-primary w-100 fw-bold py-3" onclick="checkEth()">SKEΝOVAT ADRESY</button>
+                <div id="statusInfo" class="status-msg text-center"></div>
             </div>
 
             <div id="resultsArea" class="d-none">
-                <div class="d-flex justify-content-between align-items-end mb-3">
-                    <h3>Výsledky</h3>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Výsledky</h4>
                     <div class="text-end">
                         <small class="text-muted">CELKEM:</small>
-                        <h2 class="eth-blue mb-0"><span id="totalEth">0.0000</span> ETH</h2>
+                        <h2 class="eth-color mb-0"><span id="totalEth">0.0000</span> ETH</h2>
                     </div>
                 </div>
-                <div class="card-custom p-0 overflow-hidden">
-                    <table class="table table-dark table-hover mb-0">
+                <div class="card-custom p-0 overflow-hidden border-0">
+                    <table class="table table-dark table-striped mb-0">
                         <thead>
                             <tr>
                                 <th class="ps-4">Adresa</th>
-                                <th class="text-end pe-4">Zůstatek (ETH)</th>
+                                <th class="text-end pe-4">Zůstatek</th>
                             </tr>
                         </thead>
                         <tbody id="resultBody"></tbody>
@@ -69,78 +62,71 @@
 </div>
 
 <script>
-async function checkEthBalances() {
+async function checkEth() {
     const rpcUrl = document.getElementById('rpcUrl').value.trim();
     const input = document.getElementById('addressInput').value;
-    const addresses = input.split('\n').map(a => a.trim()).filter(a => a.startsWith('0x') && a.length === 42);
+    // Očistíme adresy - musí začínat 0x a mít správnou délku
+    const addresses = input.split('\n')
+        .map(a => a.trim().toLowerCase())
+        .filter(a => a.startsWith('0x') && a.length === 42);
 
-    if (addresses.length === 0) return alert("Vložte platné ETH adresy začínající 0x!");
+    if (addresses.length === 0) return alert("Vložte platné ETH adresy začínající 0x (délka 42 znaků)!");
 
     const btn = document.getElementById('runBtn');
-    const loader = document.getElementById('loader');
     const list = document.getElementById('resultBody');
     const totalDisp = document.getElementById('totalEth');
+    const status = document.getElementById('statusInfo');
     
     btn.disabled = true;
-    loader.style.display = 'inline-block';
     document.getElementById('resultsArea').classList.remove('d-none');
     list.innerHTML = '';
     let totalWei = BigInt(0);
 
-    // Ethereum zvládá v jednom batchi cca 50-100 požadavků
-    const chunkSize = 50; 
-
-    for (let i = 0; i < addresses.length; i += chunkSize) {
-        const chunk = addresses.slice(i, i + chunkSize);
-        
-        // Vytvoření batch požadavku pro Ethereum JSON-RPC
-        const batchRequest = chunk.map((addr, index) => ({
-            jsonrpc: "2.0",
-            id: i + index,
-            method: "eth_getBalance",
-            params: [addr, "latest"]
-        }));
+    for (let i = 0; i < addresses.length; i++) {
+        const addr = addresses[i];
+        status.innerText = `Kontroluji ${i + 1} z ${addresses.length}...`;
 
         try {
             const response = await fetch(rpcUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(batchRequest)
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: i,
+                    method: "eth_getBalance",
+                    params: [addr, "latest"]
+                })
             });
 
-            const results = await response.json();
+            const data = await response.json();
 
-            // Zpracování výsledků (pořadí v batchi odpovídá pořadí v poli)
-            results.forEach((res, index) => {
-                const addr = chunk[index];
-                let ethValue = "0.0000";
-                
-                if (res.result) {
-                    const wei = BigInt(res.result);
-                    totalWei += wei;
-                    // Převod z Wei na ETH (18 desetinných míst)
-                    ethValue = (Number(wei) / 1e18).toFixed(6);
-                }
+            if (data.result) {
+                const wei = BigInt(data.result);
+                totalWei += wei;
+                const ethVal = (Number(wei) / 1e18).toFixed(6);
 
-                const row = `<tr>
-                    <td class="ps-4 font-monospace small" style="color:#8b949e">${addr}</td>
-                    <td class="text-end pe-4 balance-val">${ethValue}</td>
-                </tr>`;
-                list.insertAdjacentHTML('beforeend', row);
-            });
-
-            totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
+                list.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td class="ps-4 font-monospace"><small>${addr}</small></td>
+                        <td class="text-end pe-4 balance-val">${ethVal} ETH</td>
+                    </tr>
+                `);
+                totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
+            } else {
+                throw new Error("Neplatný výsledek");
+            }
 
         } catch (e) {
-            console.error("Batch error", e);
-            chunk.forEach(a => {
-                list.insertAdjacentHTML('beforeend', `<tr><td class="ps-4 text-danger">${a}</td><td class="text-end pe-4 text-danger">Chyba</td></tr>`);
-            });
+            console.error("Chyba:", e);
+            list.insertAdjacentHTML('beforeend', `<tr><td class="ps-4 text-danger">${addr}</td><td class="text-end pe-4 text-danger">Error</td></tr>`);
         }
+
+        // Malá pauza proti zablokování (u Alchemy můžeš nastavit na 0)
+        await new Promise(r => setTimeout(r, 200));
     }
 
+    status.innerText = "Hotovo.";
     btn.disabled = false;
-    loader.style.display = 'none';
 }
 </script>
 </body>
