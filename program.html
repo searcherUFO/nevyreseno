@@ -1,145 +1,164 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitcoin BIP-84 Wallet Generator</title>
+    <title>ULTRA BTC Gen - Parallel Processing</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f0f2f5; padding: 20px; color: #1c1e21; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #f7931a; text-align: center; margin-bottom: 25px; }
-        .controls { background: #f8f9fa; padding: 20px; border-radius: 10px; display: flex; gap: 10px; align-items: flex-end; justify-content: center; border: 1px solid #e4e6eb; margin-bottom: 25px; flex-wrap: wrap; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 11px; font-weight: bold; color: #65676b; text-transform: uppercase; }
-        input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 80px; font-size: 16px; text-align: center; }
-        button { padding: 11px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
-        .btn-gen { background: #f7931a; color: white; }
-        .btn-gen:hover { background: #e88316; }
-        .btn-copy { background: #e4e6eb; color: #1c1e21; }
-        .btn-copy:hover { background: #d8dadf; }
-        .wallet-item { border: 1px solid #e4e6eb; border-radius: 8px; padding: 15px; margin-bottom: 12px; border-left: 5px solid #f7931a; position: relative; }
-        .meta { font-size: 11px; font-weight: bold; color: #8a8d91; text-transform: uppercase; margin-bottom: 4px; }
-        .address { font-family: monospace; font-size: 15px; color: #1c1e21; font-weight: bold; margin-bottom: 10px; display: block; word-break: break-all; }
-        .phrase { font-family: Georgia, serif; font-size: 16px; color: #4b4e52; font-style: italic; background: #fffcf5; padding: 5px; border-radius: 4px; display: block; }
-        #error { color: #d93025; background: #fce8e6; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        body { font-family: 'Courier New', monospace; background: #000; color: #00ff41; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .panel { background: #0a0a0a; border: 1px solid #00ff41; padding: 40px; border-radius: 5px; width: 500px; box-shadow: 0 0 40px rgba(0,255,65,0.05); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .stats { font-size: 10px; color: #008822; margin-top: 5px; text-transform: uppercase; }
+        input { background: #000; border: 1px solid #00ff41; color: #00ff41; padding: 12px; width: 100%; box-sizing: border-box; font-size: 20px; text-align: center; margin-bottom: 20px; }
+        .btn { border: 1px solid #00ff41; padding: 15px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; transition: 0.2s; }
+        .btn-gen { background: #00ff41; color: #000; width: 100%; border: none; }
+        .btn-copy { background: transparent; color: #00ff41; display: none; }
+        .btn:hover { opacity: 0.8; box-shadow: 0 0 10px #00ff41; }
+        .progress-container { background: #050505; border: 1px solid #111; height: 4px; margin: 20px 0; }
+        .progress-bar { background: #00ff41; height: 100%; width: 0%; transition: width 0.1s; }
+        #log { font-size: 12px; text-align: center; margin-top: 10px; height: 1.2em; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>BTC SegWit Generator</h1>
-    <div id="error"></div>
-    <div class="controls">
-        <div class="input-group">
-            <label>Počet peněženek</label>
-            <input type="number" id="count" value="10" min="1" max="100">
-        </div>
-        <button class="btn-gen" onclick="generate()">Vygenerovat</button>
-        <button class="btn-copy" id="copyBtn" onclick="copyAllAddresses()" style="display:none;">Kopírovat seznam adres</button>
+<div class="panel">
+    <div style="font-size: 10px; margin-bottom: 20px;">SYSTEM: MULTITHREADED_PARALLEL_v2.0</div>
+    
+    <label style="font-size: 10px;">POŽADOVANÝ POČET PENĚŽENEK</label>
+    <input type="number" id="count" value="10000" min="1" max="1000000">
+    
+    <div class="stats" id="coreCount">DETEKCE JADER...</div>
+    <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
+    
+    <div id="log">SYSTÉM PŘIPRAVEN</div>
+
+    <button id="genBtn" class="btn btn-gen" onclick="masterGenerate()">INICIALIZOVAT CLUSTER</button>
+    
+    <div class="grid">
+        <button id="c1" class="btn btn-copy" onclick="copy('addr')">Kopírovat Adresy</button>
+        <button id="c2" class="btn btn-copy" onclick="copy('full')">Kopírovat Vše</button>
     </div>
-    <div id="results"></div>
 </div>
 
-<script>
-    const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
-    function polymod(values) {
-        let chk = 1;
-        for (let v of values) {
-            let top = chk >> 25;
-            chk = ((chk & 0x1ffffff) << 5) ^ v;
-            for (let i = 0; i < 5; i++) chk ^= ((top >> i) & 1) ? [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3][i] : 0;
-        }
-        return chk;
-    }
-    const hrpExpand = hrp => [...hrp].reduce((a, c) => [...a, c.charCodeAt(0) >> 5], []).concat([0]).concat([...hrp].map(c => c.charCodeAt(0) & 31));
-    const createChecksum = (hrp, data) => {
-        let values = hrpExpand(hrp).concat(data).concat([0, 0, 0, 0, 0, 0]);
-        let mod = polymod(values) ^ 1;
-        return Array.from({length: 6}, (_, i) => (mod >> (5 * (5 - i))) & 31);
-    };
-    const encodeBech32 = (hrp, data) => {
-        let combined = data.concat(createChecksum(hrp, data));
-        return hrp + '1' + combined.map(v => CHARSET[v]).join('');
-    };
-    const convertBits = (data, from, to, pad) => {
-        let acc = 0, bits = 0, ret = [];
-        for (let v of data) {
-            acc = (acc << from) | v;
-            bits += from;
-            while (bits >= to) { bits -= to; ret.push((acc >> bits) & ((1 << to) - 1)); }
-        }
-        if (pad && bits > 0) ret.push((acc << (to - bits)) & ((1 << to) - 1));
-        return ret;
-    };
+<!-- DEFINICE WORKERU -->
+<script id="worker-code" type="text/javascript-worker">
+    self.onmessage = async function(e) {
+        const { count, id } = e.data;
+        importScripts('https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js');
 
-    let generatedAddresses = [];
-
-    async function generate() {
-        const results = document.getElementById('results');
-        const error = document.getElementById('error');
-        const copyBtn = document.getElementById('copyBtn');
-        const count = parseInt(document.getElementById('count').value);
-        
-        error.style.display = 'none';
-        copyBtn.style.display = 'none';
-        results.innerHTML = '<div style="text-align:center; color:#666;">Generuji...</div>';
-        generatedAddresses = [];
-
-        try {
-            let html = '';
-            for (let i = 0; i < count; i++) {
-                const entropy = ethers.randomBytes(16);
-                const mnemonic = ethers.Mnemonic.fromEntropy(entropy);
-                const path = "m/84'/0'/0'/0/0";
-                const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase, "", path);
-                
-                const compressedPubKey = ethers.SigningKey.computePublicKey(wallet.privateKey, true);
-                const hash160 = ethers.ripemd160(ethers.sha256(compressedPubKey));
-                const words = [0].concat(convertBits(ethers.getBytes(hash160), 8, 5, true));
-                const btcAddress = encodeBech32('bc', words);
-
-                generatedAddresses.push(btcAddress);
-
-                html += `
-                    <div class="wallet-item">
-                        <div class="meta">#${i+1} | Bitcoin Adresa</div>
-                        <span class="address">${btcAddress}</span>
-                        <div class="meta">Seed Phrase</div>
-                        <span class="phrase">${mnemonic.phrase}</span>
-                    </div>
-                `;
-            }
-            results.innerHTML = html;
-            copyBtn.style.display = 'inline-block';
-        } catch (e) {
-            error.innerText = "Chyba: " + e.message;
-            error.style.display = 'block';
-            results.innerHTML = '';
-        }
-    }
-
-    function copyAllAddresses() {
-        if (generatedAddresses.length === 0) return;
-        
-        // Změna na '\n' zajistí, že každá adresa bude na novém řádku
-        const textToCopy = generatedAddresses.join('\n');
-        const btn = document.getElementById('copyBtn');
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = btn.innerText;
-            btn.innerText = 'Seznam zkopírován! ✓';
-            btn.style.background = '#4BB543';
-            btn.style.color = 'white';
+        let batch = [];
+        for (let i = 0; i < count; i++) {
+            const entropy = ethers.randomBytes(16);
+            const mnemonic = ethers.Mnemonic.fromEntropy(entropy);
+            const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase, "", "m/84'/0'/0'/0/0");
             
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = '#e4e6eb';
-                btn.style.color = '#1c1e21';
-            }, 2000);
-        }).catch(err => {
-            alert('Chyba při kopírování: ' + err);
+            // Posíláme surová data (Private Key a Mnemonic), převod na BTC uděláme v hlavním vlákně
+            batch.push({
+                pk: wallet.privateKey,
+                mn: mnemonic.phrase
+            });
+
+            if (i % 50 === 0) self.postMessage({ type: 'progress', step: 50 });
+        }
+        self.postMessage({ type: 'done', data: batch });
+    };
+</script>
+
+<script>
+    // Bitcoin Bech32 Logic
+    const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+    const polymod = v => {
+        let chk = 1; for (let x of v) {
+            let top = chk >> 25; chk = ((chk & 0x1ffffff) << 5) ^ x;
+            for (let i = 0; i < 5; i++) chk ^= ((top >> i) & 1) ? [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3][i] : 0;
+        } return chk;
+    };
+    const hrpExp = h => [...h].reduce((a, c) => [...a, c.charCodeAt(0) >> 5], []).concat([0]).concat([...h].map(c => c.charCodeAt(0) & 31));
+    const encodeBech32 = (h, d) => {
+        let v = hrpExp(h).concat(d).concat([0,0,0,0,0,0]);
+        let mod = polymod(v) ^ 1;
+        let ck = Array.from({length:6}, (_,i) => (mod >> (5*(5-i))) & 31);
+        return h + '1' + d.concat(ck).map(x => CHARSET[x]).join('');
+    };
+    const conv = (d, f, t, p) => {
+        let a = 0, b = 0, r = [];
+        for (let v of d) { a = (a << f) | v; b += f; while (b >= t) { b -= t; r.push((a >> b) & ((1 << t) - 1)); } }
+        if (p && b > 0) r.push((a << (t - b)) & ((1 << t) - 1));
+        return r;
+    };
+
+    const cores = navigator.hardwareConcurrency || 4;
+    document.getElementById('coreCount').innerText = `AKTIVNÍ VLÁKNA: ${cores} (MAXIMÁLNÍ VÝKON)`;
+
+    let finalAddr = "";
+    let finalFull = "";
+
+    async function masterGenerate() {
+        const total = parseInt(document.getElementById('count').value);
+        const log = document.getElementById('log');
+        const genBtn = document.getElementById('genBtn');
+        const countPerWorker = Math.floor(total / cores);
+        
+        genBtn.disabled = true;
+        log.innerText = "SPOUŠTÍM PARALELNÍ VLÁKNA...";
+        
+        let completedWorkers = 0;
+        let totalProgress = 0;
+        let allWallets = [];
+
+        const workerBlob = new Blob([document.getElementById('worker-code').textContent], {type: 'text/javascript'});
+        const workerUrl = URL.createObjectURL(workerBlob);
+
+        for (let i = 0; i < cores; i++) {
+            const worker = new Worker(workerUrl);
+            worker.postMessage({ count: (i === cores - 1) ? total - (countPerWorker * i) : countPerWorker, id: i });
+
+            worker.onmessage = function(e) {
+                if (e.data.type === 'progress') {
+                    totalProgress += e.data.step;
+                    let p = Math.min(100, Math.round((totalProgress / total) * 100));
+                    document.getElementById('bar').style.width = p + "%";
+                    log.innerText = `GENEROVÁNÍ: ${totalProgress} / ${total}`;
+                }
+
+                if (e.data.type === 'done') {
+                    allWallets = allWallets.concat(e.data.data);
+                    completedWorkers++;
+                    if (completedWorkers === cores) finalize(allWallets);
+                    worker.terminate();
+                }
+            };
+        }
+    }
+
+    function finalize(wallets) {
+        const log = document.getElementById('log');
+        log.innerText = "KÓDOVÁNÍ DO BECH32 BTC...";
+        
+        let addrs = [];
+        let fulls = [];
+
+        wallets.forEach(w => {
+            const pubKey = ethers.SigningKey.computePublicKey(w.pk, true);
+            const h160 = ethers.ripemd160(ethers.sha256(pubKey));
+            const btcAddr = encodeBech32('bc', [0].concat(conv(ethers.getBytes(h160), 8, 5, true)));
+            addrs.push(btcAddr);
+            fulls.push(`${btcAddr}:${w.mn}`);
         });
+
+        finalAddr = addrs.join('\n');
+        finalFull = fulls.join('\n');
+
+        log.innerText = "HOTOVO. OPERACE DOKONČENA.";
+        document.getElementById('c1').style.display = "block";
+        document.getElementById('c2').style.display = "block";
+        document.getElementById('genBtn').disabled = false;
+    }
+
+    function copy(t) {
+        navigator.clipboard.writeText(t === 'addr' ? finalAddr : finalFull);
+        alert("ZKOPIROVÁNO!");
     }
 </script>
 
