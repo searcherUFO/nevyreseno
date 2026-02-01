@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>ETH CLUSTER GEN - v3.0 Parallel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', monospace; background: #080808; color: #3498db; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .panel { background: #111; border: 1px solid #3498db; padding: 40px; border-radius: 8px; width: 450px; box-shadow: 0 0 40px rgba(52, 152, 219, 0.1); text-align: center; }
+        .status-box { margin: 20px 0; font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #5dade2; }
+        input { background: #000; border: 1px solid #3498db; color: #fff; padding: 12px; width: 120px; text-align: center; font-size: 20px; margin-bottom: 20px; border-radius: 4px; outline: none; }
+        .progress-bg { background: #000; border: 1px solid #222; height: 4px; margin-bottom: 30px; border-radius: 2px; }
+        .progress-fill { background: #3498db; height: 100%; width: 0%; transition: width 0.1s; box-shadow: 0 0 10px #3498db; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; cursor: pointer; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; transition: 0.2s; font-size: 13px; }
+        .btn-run { background: #3498db; color: #fff; }
+        .btn-run:hover { background: #2980b9; box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); }
+        .btn-copy { background: #1a1a1a; color: #3498db; border: 1px solid #3498db; display: none; }
+        .btn-copy:hover { background: #3498db; color: #fff; }
+        .btn:disabled { background: #2c3e50; color: #555; cursor: not-allowed; border-color: #2c3e50; }
+        .core-info { font-size: 9px; color: #555; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="panel">
+    <div style="font-size: 10px; margin-bottom: 10px; opacity: 0.6;">ETH_ADDRESS_MINING_CLUSTER</div>
+    <h2 style="margin: 0 0 25px 0; font-weight: 300; letter-spacing: 3px;">ETHEREUM GEN</h2>
+    
+    <label style="font-size: 10px; display: block; margin-bottom: 5px;">BATCH SIZE</label>
+    <input type="number" id="count" value="1000" min="1" max="1000000">
+    
+    <div id="status" class="status-box">SYSTEM IDLE</div>
+    <div class="progress-bg"><div id="bar" class="progress-fill"></div></div>
+
+    <button id="genBtn" class="btn btn-run" onclick="initCluster()">Spustit generování</button>
+    <button id="copyA" class="btn btn-copy" onclick="copy('addr')">Kopírovat pouze adresy</button>
+    <button id="copyF" class="btn btn-copy" onclick="copy('full')">Kopírovat Adresa:Klíč</button>
+    
+    <div class="core-info" id="coreInfo">DETEKCE HARDWARU...</div>
+</div>
+
+<script id="worker-src" type="text/javascript-worker">
+    self.onmessage = async function(e) {
+        const { count } = e.data;
+        // Načtení ethers uvnitř workeru
+        importScripts('https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js');
+
+        let wallets = [];
+        for (let i = 0; i < count; i++) {
+            // Generování entropie -> Mnemoniky -> Peněženky
+            const entropy = ethers.randomBytes(16);
+            const mnemonic = ethers.Mnemonic.fromEntropy(entropy);
+            
+            // Standardní ETH cesta m/44'/60'/0'/0/0
+            const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase);
+            
+            wallets.push({
+                a: wallet.address,
+                m: mnemonic.phrase
+            });
+
+            // Reportování pokroku každých 50 generací
+            if (i % 50 === 0) self.postMessage({ type: 'progress', step: 50 });
+        }
+        self.postMessage({ type: 'done', data: wallets });
+    };
+</script>
+
+<script>
+    const cores = navigator.hardwareConcurrency || 4;
+    document.getElementById('coreInfo').innerText = `CPU CORES DETECTED: ${cores} | MODE: PARALLEL_WORKERS`;
+
+    let cacheAddr = "";
+    let cacheFull = "";
+
+    function initCluster() {
+        const total = parseInt(document.getElementById('count').value);
+        const status = document.getElementById('status');
+        const genBtn = document.getElementById('genBtn');
+        const bar = document.getElementById('bar');
+        
+        // UI Reset
+        genBtn.disabled = true;
+        document.getElementById('copyA').style.display = "none";
+        document.getElementById('copyF').style.display = "none";
+        status.innerText = "ALOKACE VLÁKEN...";
+        status.style.color = "#3498db";
+        bar.style.width = "0%";
+
+        let completed = 0;
+        let progress = 0;
+        let results = [];
+        const perWorker = Math.floor(total / cores);
+
+        const blob = new Blob([document.getElementById('worker-src').textContent], {type: 'text/javascript'});
+        const url = URL.createObjectURL(blob);
+
+        for (let i = 0; i < cores; i++) {
+            const worker = new Worker(url);
+            // Poslední worker zpracuje zbytek, pokud dělení není bezezbytku
+            const amount = (i === cores - 1) ? total - (perWorker * i) : perWorker;
+            
+            worker.postMessage({ count: amount });
+
+            worker.onmessage = function(e) {
+                if (e.data.type === 'progress') {
+                    progress += e.data.step;
+                    let p = Math.min(100, Math.round((progress / total) * 100));
+                    bar.style.width = p + "%";
+                    status.innerText = `GENEROVÁNÍ: ${progress} / ${total}`;
+                }
+
+                if (e.data.type === 'done') {
+                    results = results.concat(e.data.data);
+                    completed++;
+                    if (completed === cores) finalize(results);
+                    worker.terminate();
+                }
+            };
+        }
+    }
+
+    function finalize(data) {
+        const status = document.getElementById('status');
+        status.innerText = "FORMÁTOVÁNÍ DAT...";
+
+        cacheAddr = data.map(w => w.a).join('\n');
+        cacheFull = data.map(w => `${w.a}:${w.m}`).join('\n');
+
+        status.innerText = "HOTOVO. CLUSTER UVOLNĚN.";
+        status.style.color = "#2ecc71";
+        document.getElementById('copyA').style.display = "block";
+        document.getElementById('copyF').style.display = "block";
+        document.getElementById('genBtn').disabled = false;
+    }
+
+    function copy(type) {
+        const text = (type === 'addr') ? cacheAddr : cacheFull;
+        navigator.clipboard.writeText(text).then(() => {
+            const status = document.getElementById('status');
+            const old = status.innerText;
+            status.innerText = "DATA ZKOPIROVÁNA!";
+            setTimeout(() => status.innerText = old, 1500);
+        });
+    }
+</script>
+
+</body>
+</html>
