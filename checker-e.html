@@ -2,148 +2,122 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Etherscan Batch Pro</title>
+    <title>ETH Multi-Engine 200/s</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0c0e12; color: #f8f9fa; font-family: 'Inter', -apple-system, sans-serif; }
-        .card-custom { background-color: #1a1d26; border: 1px solid #343a40; border-radius: 15px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        textarea { background-color: #0d1117 !important; color: #00ff88 !important; border: 1px solid #343a40 !important; font-family: 'Courier New', monospace; height: 320px; font-size: 14px; }
-        .eth-val { color: #00ff88; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; }
-        .total-display { color: #627eea; font-weight: 900; font-size: 2.8rem; text-shadow: 0 0 15px rgba(98, 126, 234, 0.2); }
-        .status-badge { background: #2d333b; color: #8b949e; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
-        .addr-col { color: #8b949e; font-size: 0.85rem; word-break: break-all; }
-        .progress-bar-custom { height: 4px; background-color: #627eea; transition: width 0.3s ease; width: 0%; }
-        .progress-container { background: #2d333b; border-radius: 2px; height: 4px; margin-top: 10px; }
+        body { background-color: #06070a; color: #e1e1e1; font-family: 'Consolas', monospace; }
+        .engine-card { background: #11141b; border: 1px solid #2d333b; border-radius: 8px; padding: 20px; }
+        textarea { background: #010409 !important; color: #58a6ff !important; border: 1px solid #30363d !important; height: 350px; font-size: 12px; }
+        .total-display { font-size: 3rem; color: #2ecc71; font-weight: bold; text-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
     </style>
 </head>
 <body>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card-custom mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 class="mb-0 fw-bold">ETH <span style="color:#627eea">Pro</span> Batcher</h2>
-                        <span class="status-badge mt-2 d-inline-block">API KEY: 5U88...4ME9</span>
-                    </div>
-                    <div class="text-end">
-                        <small class="text-muted fw-bold text-uppercase">Součet zůstatků</small>
-                        <div class="total-display"><span id="totalEth">0.000000</span> <small class="fs-4">ETH</small></div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label small fw-bold text-uppercase text-muted">Vložte Ethereum adresy (0x...)</label>
-                    <textarea id="addressInput" class="form-control" placeholder="Vložte adresy, každou na nový řádek..."></textarea>
-                    <div class="progress-container"><div id="progressBar" class="progress-bar-custom"></div></div>
-                </div>
-
-                <button id="runBtn" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" onclick="runEtherscan()">
-                    SPUSTIT RYCHLOU KONTROLU (20 ADRES / BATCH)
-                </button>
-                <div id="statusInfo" class="text-center mt-3 small text-muted font-monospace">PŘIPRAVENO</div>
+<div class="container py-4">
+    <div class="engine-card shadow-lg">
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <h1 class="fw-bold mb-0">ETH <span class="text-primary">ULTRA</span> SCANNER</h1>
+                <p class="text-muted small">Multi-Provider Parallel Engine (Target: 200+ addr/s)</p>
             </div>
-
-            <div id="resultsArea" class="d-none">
-                <div class="card-custom p-0 overflow-hidden border-secondary">
-                    <table class="table table-dark table-hover mb-0">
-                        <thead>
-                            <tr class="bg-dark">
-                                <th class="ps-4 border-secondary small text-muted">ADRESA</th>
-                                <th class="text-end pe-4 border-secondary small text-muted">ZŮSTATEK (ETH)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultBody"></tbody>
-                    </table>
-                </div>
+            <div class="col-md-5 text-end border-start border-secondary">
+                <div id="totalEth" class="total-display">0.0000</div>
+                <div class="small fw-bold text-muted">CELKEM ETH</div>
             </div>
         </div>
+
+        <textarea id="addressInput" class="form-control my-4" placeholder="Vložte tisíce adres (0x...)..."></textarea>
+
+        <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold" onclick="launchTurbo()">SPUSTIT PARALELNÍ SKEN</button>
+        <div id="stats" class="text-center mt-3 text-info small"></div>
+    </div>
+
+    <div id="resultsArea" class="mt-4 d-none">
+        <div class="table-responsive"><table class="table table-dark table-sm"><tbody id="resultBody"></tbody></table></div>
     </div>
 </div>
 
 <script>
-// Tvůj klíč je vložen přímo zde
-const ETHERSCAN_KEY = "5U88UQ4T3UIC9C3MGUGN8V6G53WX214ME9";
+// Seznam RPC, které budeme používat paralelně pro maximální propustnost
+const ENGINES = [
+    "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA",
+    "https://eth.llamarpc.com",
+    "https://rpc.ankr.com/eth",
+    "https://cloudflare-eth.com",
+    "https://1rpc.io/eth"
+];
 
-async function runEtherscan() {
+async function launchTurbo() {
     const input = document.getElementById('addressInput').value;
-    const addresses = input.split(/[\n,]+/)
-        .map(a => a.trim().toLowerCase())
-        .filter(a => a.startsWith('0x') && a.length === 42);
-
-    if (addresses.length === 0) return alert("Prosím vložte platné ETH adresy!");
+    const addresses = input.split('\n').map(a => a.trim().toLowerCase()).filter(a => a.startsWith('0x') && a.length === 42);
+    if (!addresses.length) return alert("Vložte adresy!");
 
     const btn = document.getElementById('runBtn');
-    const list = document.getElementById('resultBody');
+    const status = document.getElementById('stats');
     const totalDisp = document.getElementById('totalEth');
-    const status = document.getElementById('statusInfo');
-    const progressBar = document.getElementById('progressBar');
-    
-    // Reset UI
+    const list = document.getElementById('resultBody');
+
     btn.disabled = true;
-    document.getElementById('resultsArea').classList.remove('d-none');
     list.innerHTML = '';
     let totalWei = BigInt(0);
-    
-    // Etherscan balancemulti zvládá 20 adres najednou
-    const BATCH_SIZE = 20; 
-    const totalBatches = Math.ceil(addresses.length / BATCH_SIZE);
+    const start = performance.now();
 
+    // Nastavení: 40 adres na balík, 5 balíků paralelně = 200 adres v jedné vlně
+    const BATCH_SIZE = 40;
+    const chunks = [];
     for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-        const chunk = addresses.slice(i, i + BATCH_SIZE);
-        const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
-        
-        status.innerText = `SKENOVÁNÍ DÁVKY ${currentBatch} Z ${totalBatches}...`;
-        progressBar.style.width = `${(currentBatch / totalBatches) * 100}%`;
-
-        // URL pro multi-balance dotaz
-        const url = `https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest&apikey=${ETHERSCAN_KEY}`;
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.status === "1" && Array.isArray(data.result)) {
-                let htmlChunk = "";
-                data.result.forEach(item => {
-                    const balanceWei = BigInt(item.balance);
-                    totalWei += balanceWei;
-                    const eth = (Number(balanceWei) / 1e18).toFixed(6);
-                    
-                    htmlChunk += `
-                        <tr class="border-secondary">
-                            <td class="ps-4 py-2 font-monospace addr-col text-break">${item.account}</td>
-                            <td class="text-end pe-4 py-2 eth-val">${eth} ETH</td>
-                        </tr>`;
-                });
-                list.insertAdjacentHTML('beforeend', htmlChunk);
-                totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
-            } else {
-                // Pokud přijde error (např. rate limit), počkáme a zkusíme to znovu
-                if (data.result && data.result.includes("Rate limit")) {
-                    status.innerText = "RATE LIMIT DOSAŽEN. ČEKÁM 1 SEKUNDU...";
-                    await new Promise(r => setTimeout(r, 1000));
-                    i -= BATCH_SIZE; 
-                    continue;
-                }
-                throw new Error(data.message || "Chyba API");
-            }
-
-        } catch (e) {
-            console.error(e);
-            chunk.forEach(a => {
-                list.insertAdjacentHTML('beforeend', `<tr><td class="ps-4 text-danger small">${a}</td><td class="text-end pe-4 text-danger small font-bold">Error</td></tr>`);
-            });
-        }
-
-        // Limit Etherscan Free je 5REQ/s (200ms pauza je ideální)
-        await new Promise(r => setTimeout(r, 220));
+        chunks.push(addresses.slice(i, i + BATCH_SIZE));
     }
 
-    status.innerText = `HOTOVO. CELKEM ZKONTROLOVÁNO ${addresses.length} ADRES.`;
-    progressBar.style.width = '100%';
+    // Paralelní zpracování
+    for (let i = 0; i < chunks.length; i += ENGINES.length) {
+        const wave = [];
+        for (let j = 0; j < ENGINES.length && (i + j) < chunks.length; j++) {
+            wave.push(fetchBatch(chunks[i + j], ENGINES[j], i + j));
+        }
+
+        const waveResults = await Promise.all(wave);
+        
+        waveResults.forEach(data => {
+            if (!data) return;
+            data.results.forEach((res, idx) => {
+                if (res.result) {
+                    const wei = BigInt(res.result);
+                    totalWei += wei;
+                    if (wei > 0n) {
+                        const eth = (Number(wei) / 1e18).toFixed(6);
+                        list.insertAdjacentHTML('afterbegin', `<tr><td class="small text-muted">${data.chunk[idx]}</td><td class="text-end text-success fw-bold">${eth} ETH</td></tr>`);
+                    }
+                }
+            });
+        });
+
+        totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(4);
+        status.innerText = `Průběh: ${Math.min(i + ENGINES.length * BATCH_SIZE, addresses.length)} / ${addresses.length}`;
+        document.getElementById('resultsArea').classList.remove('d-none');
+    }
+
+    const duration = ((performance.now() - start) / 1000).toFixed(2);
+    status.innerHTML = `<span class="text-success">DOKONČENO: ${addresses.length} adres za ${duration}s (Rychlost: ${Math.round(addresses.length/duration)} addr/s)</span>`;
     btn.disabled = false;
+}
+
+async function fetchBatch(chunk, url, id) {
+    try {
+        const payload = chunk.map((addr, idx) => ({
+            jsonrpc: "2.0", id: id + idx, method: "eth_getBalance", params: [addr, "latest"]
+        }));
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const results = await res.json();
+        return { results, chunk };
+    } catch (e) {
+        return null;
+    }
 }
 </script>
 </body>
