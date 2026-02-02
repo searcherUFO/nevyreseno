@@ -1,179 +1,169 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <title>ULTRA BTC Gen - StayAwake Parallel</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+    <meta charset="utf-8">
+    <title>ETH Zero-Loss Pro (Always On)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Courier New', monospace; background: #000; color: #00ff41; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        .panel { background: #0a0a0a; border: 1px solid #00ff41; padding: 40px; border-radius: 5px; width: 500px; box-shadow: 0 0 40px rgba(0,255,65,0.05); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .stats { font-size: 10px; color: #008822; margin-top: 5px; text-transform: uppercase; }
-        input { background: #000; border: 1px solid #00ff41; color: #00ff41; padding: 12px; width: 100%; box-sizing: border-box; font-size: 20px; text-align: center; margin-bottom: 20px; }
-        .btn { border: 1px solid #00ff41; padding: 15px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; transition: 0.2s; }
-        .btn-gen { background: #00ff41; color: #000; width: 100%; border: none; }
-        .btn-copy { background: transparent; color: #00ff41; display: none; }
-        .btn:hover { opacity: 0.8; box-shadow: 0 0 10px #00ff41; }
-        .progress-container { background: #050505; border: 1px solid #111; height: 4px; margin: 20px 0; }
-        .progress-bar { background: #00ff41; height: 100%; width: 0%; transition: width 0.1s; }
-        #log { font-size: 12px; text-align: center; margin-top: 10px; height: 1.2em; }
-        .wake-status { font-size: 9px; margin-top: 15px; color: #555; text-align: center; }
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Consolas', monospace; }
+        .main-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 25px; }
+        textarea { background-color: #010409 !important; color: #58a6ff !important; border: 1px solid #30363d !important; height: 280px; font-size: 13px; }
+        .eth-val { color: #2ecc71; font-weight: bold; }
+        .total-display { font-size: 2.5rem; color: #58a6ff; font-weight: bold; text-shadow: 0 0 15px rgba(88, 166, 255, 0.3); }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; background: #21262d; }
+        .wake-lock-status { font-size: 0.75rem; color: #f7931a; }
     </style>
 </head>
 <body>
 
-<div class="panel">
-    <div style="font-size: 10px; margin-bottom: 20px;">SYSTEM: TURBO_PARALLEL_STAY_AWAKE</div>
-    
-    <label style="font-size: 10px;">POŽADOVANÝ POČET PENĚŽENEK</label>
-    <input type="number" id="count" value="10000" min="1" max="1000000">
-    
-    <div class="stats" id="coreCount">DETEKCE JADER...</div>
-    <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
-    
-    <div id="log">SYSTÉM PŘIPRAVEN</div>
+<div class="container py-4">
+    <div class="main-card shadow-lg mb-4">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-7">
+                <h2 class="fw-bold mb-0">ETH <span style="color:#58a6ff">Zero-Loss</span> Engine</h2>
+                <div class="mt-2">
+                    <span id="engine1" class="status-pill text-success">ETHER SCAN: OK</span>
+                    <span id="engine2" class="status-pill text-primary ps-2">ALCHEMY: OK</span>
+                    <span id="wakeLockInfo" class="ms-2 wake-lock-status d-none">🔒 OBRAZOVKA BUDE ZAPNUTÁ</span>
+                </div>
+            </div>
+            <div class="col-md-5 text-end">
+                <small class="text-muted fw-bold">CELKEM NAJDENO</small>
+                <div class="total-display"><span id="totalEth">0.000000</span> ETH</div>
+            </div>
+        </div>
 
-    <button id="genBtn" class="btn btn-gen" onclick="masterGenerate()">SPUSTIT BATCH GENERACI</button>
-    
-    <div class="grid">
-        <button id="c1" class="btn btn-copy" onclick="copy('addr')">Kopírovat Adresy</button>
-        <button id="c2" class="btn btn-copy" onclick="copy('full')">Kopírovat Vše</button>
+        <textarea id="addressInput" class="form-control mb-3" placeholder="Vložte adresy (0x...)"></textarea>
+
+        <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold py-3" onclick="startEngine()">SPUSTIT GARANTOVANÝ SKEN</button>
+        <div id="progressInfo" class="text-center mt-3 small text-muted"></div>
     </div>
-    <div id="wakeStatus" class="wake-status">WAKE_LOCK: INACTIVE</div>
+
+    <!-- Zde se zobrazí jen adresy s penězi -->
+    <div id="foundArea" class="d-none">
+        <h5 class="text-success fw-bold mb-3">! NALEZENÉ PENĚŽENKY !</h5>
+        <div class="main-card p-0 overflow-hidden">
+            <table class="table table-dark table-hover mb-0">
+                <tbody id="foundBody"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-<script id="worker-code" type="text/javascript-worker">
-    self.onmessage = async function(e) {
-        const { count } = e.data;
-        importScripts('https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js');
-        let batch = [];
-        for (let i = 0; i < count; i++) {
-            const entropy = ethers.randomBytes(16);
-            const mnemonic = ethers.Mnemonic.fromEntropy(entropy);
-            const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase, "", "m/84'/0'/0'/0/0");
-            batch.push({ pk: wallet.privateKey, mn: mnemonic.phrase });
-            if (i % 50 === 0) self.postMessage({ type: 'progress', step: 50 });
-        }
-        self.postMessage({ type: 'done', data: batch });
-    };
-</script>
-
 <script>
-    // --- BTC BECH32 LOGIC ---
-    const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
-    const polymod = v => {
-        let chk = 1; for (let x of v) {
-            let top = chk >> 25; chk = ((chk & 0x1ffffff) << 5) ^ x;
-            for (let i = 0; i < 5; i++) chk ^= ((top >> i) & 1) ? [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3][i] : 0;
-        } return chk;
-    };
-    const hrpExp = h => [...h].reduce((a, c) => [...a, c.charCodeAt(0) >> 5], []).concat([0]).concat([...h].map(c => c.charCodeAt(0) & 31));
-    const encodeBech32 = (h, d) => {
-        let v = hrpExp(h).concat(d).concat([0,0,0,0,0,0]);
-        let mod = polymod(v) ^ 1;
-        let ck = Array.from({length:6}, (_,i) => (mod >> (5*(5-i))) & 31);
-        return h + '1' + d.concat(ck).map(x => CHARSET[x]).join('');
-    };
-    const conv = (d, f, t, p) => {
-        let a = 0, b = 0, r = [];
-        for (let v of d) { a = (a << f) | v; b += f; while (b >= t) { b -= t; r.push((a >> b) & ((1 << t) - 1)); } }
-        if (p && b > 0) r.push((a << (to - bits)) & ((1 << to) - 1)); // Fixed bit manipulation
-        return r;
-    };
-    // Oprava drobné chyby v convertBits pro stabilitu
-    const convFixed = (data, from, to, pad) => {
-        let acc = 0, bits = 0, ret = [];
-        for (let v of data) {
-            acc = (acc << from) | v;
-            bits += from;
-            while (bits >= to) { bits -= to; ret.push((acc >> bits) & ((1 << to) - 1)); }
+const ETHERSCAN_KEY = "5U88UQ4T3UIC9C3MGUGN8V6G53WX214ME9";
+const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
+
+let wakeLock = null;
+
+// Funkce pro zabránění uspání obrazovky
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            document.getElementById('wakeLockInfo').classList.remove('d-none');
+            console.log("Wake Lock aktivní - obrazovka se nevypne.");
         }
-        if (pad && bits > 0) ret.push((acc << (to - bits)) & ((1 << to) - 1));
-        return ret;
-    };
-
-    const cores = navigator.hardwareConcurrency || 4;
-    document.getElementById('coreCount').innerText = `AKTIVNÍ VLÁKNA: ${cores} | VÝKON: MAX`;
-
-    let finalAddr = ""; let finalFull = "";
-    let wakeLock = null;
-
-    // Funkce pro zabránění uspání
-    async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen');
-                document.getElementById('wakeStatus').innerText = "WAKE_LOCK: ACTIVE (DEVICE WON'T SLEEP)";
-                document.getElementById('wakeStatus').style.color = "#00ff41";
-            }
-        } catch (err) {
-            console.log("Wake Lock failed:", err);
-        }
+    } catch (err) {
+        console.error(`${err.name}, ${err.message}`);
     }
+}
 
-    async function masterGenerate() {
-        const total = parseInt(document.getElementById('count').value);
-        const log = document.getElementById('log');
-        const countPerWorker = Math.floor(total / cores);
-        
-        document.getElementById('genBtn').disabled = true;
-        await requestWakeLock(); // Aktivujeme ochranu proti uspání
-        
-        log.innerText = "SPOUŠTÍM PARALELNÍ CLUSTER...";
-        let completed = 0; let progress = 0; let all = [];
-
-        const blob = new Blob([document.getElementById('worker-code').textContent], {type: 'text/javascript'});
-        const url = URL.createObjectURL(blob);
-
-        for (let i = 0; i < cores; i++) {
-            const w = new Worker(url);
-            w.postMessage({ count: (i === cores - 1) ? total - (countPerWorker * i) : countPerWorker });
-            w.onmessage = e => {
-                if (e.data.type === 'progress') {
-                    progress += e.data.step;
-                    document.getElementById('bar').style.width = Math.min(100, Math.round((progress/total)*100)) + "%";
-                    log.innerText = `BĚŽÍ: ${progress} / ${total}`;
-                }
-                if (e.data.type === 'done') {
-                    all = all.concat(e.data.data);
-                    completed++;
-                    if (completed === cores) finalize(all);
-                    w.terminate();
-                }
-            };
-        }
-    }
-
-    function finalize(wallets) {
-        document.getElementById('log').innerText = "FINÁLNÍ BOT_PROCESSING...";
-        let a = []; let f = [];
-        wallets.forEach(w => {
-            const pubKey = ethers.SigningKey.computePublicKey(w.pk, true);
-            const h160 = ethers.ripemd160(ethers.sha256(pubKey));
-            const btcAddr = encodeBech32('bc', [0].concat(convFixed(ethers.getBytes(h160), 8, 5, true)));
-            a.push(btcAddr); f.push(`${btcAddr}:${w.mn}`);
+// Funkce pro uvolnění zámku obrazovky
+function releaseWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release().then(() => {
+            wakeLock = null;
+            document.getElementById('wakeLockInfo').classList.add('d-none');
+            console.log("Wake Lock uvolněn.");
         });
-        finalAddr = a.join('\n'); finalFull = f.join('\n');
+    }
+}
+
+async function startEngine() {
+    const input = document.getElementById('addressInput').value;
+    const addresses = input.split(/[\n,]+/).map(a => a.trim().toLowerCase()).filter(a => a.startsWith('0x') && a.length === 42);
+    
+    if (addresses.length === 0) return alert("Vložte platné ETH adresy!");
+
+    const btn = document.getElementById('runBtn');
+    const totalDisp = document.getElementById('totalEth');
+    const foundBody = document.getElementById('foundBody');
+    const status = document.getElementById('progressInfo');
+
+    btn.disabled = true;
+    foundBody.innerHTML = '';
+    let totalWei = BigInt(0);
+    const start = performance.now();
+
+    // AKTIVACE ZÁMKU OBRAZOVKY
+    await requestWakeLock();
+
+    const BATCH_SIZE = 20;
+    
+    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+        const chunk = addresses.slice(i, i + BATCH_SIZE);
+        status.innerText = `Prověřuji balík ${Math.floor(i/BATCH_SIZE)+1} z ${Math.ceil(addresses.length/BATCH_SIZE)}...`;
+
+        let resultData = null;
         
-        document.getElementById('log').innerText = "HOTOVO. SYSTÉM UVOLNĚN.";
-        document.getElementById('c1').style.display = "block";
-        document.getElementById('c2').style.display = "block";
-        document.getElementById('genBtn').disabled = false;
-        
-        // Uvolníme zámek obrazovky po dokončení
-        if (wakeLock) {
-            wakeLock.release().then(() => {
-                wakeLock = null;
-                document.getElementById('wakeStatus').innerText = "WAKE_LOCK: INACTIVE";
-                document.getElementById('wakeStatus').style.color = "#555";
-            });
+        // --- 1. POKUS: ETHERSCAN ---
+        try {
+            const res = await fetch(`https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest&apikey=${ETHERSCAN_KEY}`);
+            const data = await res.json();
+            if (data.status === "1" && Array.isArray(data.result)) {
+                resultData = data.result.map(r => ({ addr: r.account, bal: r.balance }));
+            }
+        } catch (e) {
+            console.log("Etherscan selhal, přepínám na Alchemy...");
         }
+
+        // --- 2. POKUS: ALCHEMY ---
+        if (!resultData) {
+            try {
+                const payload = chunk.map((addr, idx) => ({ jsonrpc: "2.0", id: idx, method: "eth_getBalance", params: [addr, "latest"] }));
+                const res = await fetch(ALCHEMY_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    resultData = data.map((d, idx) => ({ addr: chunk[idx], bal: d.result || "0x0" }));
+                }
+            } catch (e) {
+                console.log("Oba servery selhaly, čekám 2s...");
+                await new Promise(r => setTimeout(r, 2000));
+                i -= BATCH_SIZE;
+                continue;
+            }
+        }
+
+        // --- ZPRACOVÁNÍ VÝSLEDKŮ ---
+        if (resultData) {
+            resultData.forEach(item => {
+                const wei = BigInt(item.bal);
+                if (wei > 0n) {
+                    totalWei += wei;
+                    const eth = (Number(wei) / 1e18).toFixed(6);
+                    document.getElementById('foundArea').classList.remove('d-none');
+                    foundBody.insertAdjacentHTML('afterbegin', `
+                        <tr>
+                            <td class="ps-3 py-2 font-monospace small" style="color:#8b949e">${item.addr}</td>
+                            <td class="text-end pe-3 py-2 text-success fw-bold">${eth} ETH</td>
+                        </tr>
+                    `);
+                }
+            });
+            totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
+        }
+
+        await new Promise(r => setTimeout(r, 200));
     }
 
-    function copy(t) {
-        navigator.clipboard.writeText(t === 'addr' ? finalAddr : finalFull);
-        alert("ZKOPIROVÁNO!");
-    }
+    const duration = ((performance.now() - start) / 1000).toFixed(2);
+    status.innerHTML = `<span class="text-success fw-bold">DOKONČENO! ${addresses.length} adres prověřeno za ${duration}s.</span>`;
+    btn.disabled = false;
+
+    // UVOLNĚNÍ ZÁMKU OBRAZOVKY
+    releaseWakeLock();
+}
 </script>
 </body>
 </html>
