@@ -2,16 +2,18 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Pro - Alchemy Edition</title>
+    <title>ETH Etherscan Batch Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0b0e11; color: #d1d5db; font-family: 'Inter', system-ui, sans-serif; }
-        .card-custom { background-color: #151921; border: 1px solid #2d333b; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        textarea { background-color: #0d1117 !important; color: #82aaff !important; border: 1px solid #30363d !important; font-family: 'Courier New', monospace; height: 250px; font-size: 0.9rem; }
-        .eth-val { color: #00ff9d; font-weight: bold; font-family: monospace; }
-        .total-box { border-bottom: 2px solid #627eea; padding-bottom: 10px; margin-bottom: 20px; }
-        .eth-blue { color: #627eea; }
-        .status-badge { font-size: 0.7rem; vertical-align: middle; margin-left: 10px; }
+        body { background-color: #0c0e12; color: #f8f9fa; font-family: 'Inter', -apple-system, sans-serif; }
+        .card-custom { background-color: #1a1d26; border: 1px solid #343a40; border-radius: 15px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        textarea { background-color: #0d1117 !important; color: #00ff88 !important; border: 1px solid #343a40 !important; font-family: 'Courier New', monospace; height: 320px; font-size: 14px; }
+        .eth-val { color: #00ff88; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; }
+        .total-display { color: #627eea; font-weight: 900; font-size: 2.8rem; text-shadow: 0 0 15px rgba(98, 126, 234, 0.2); }
+        .status-badge { background: #2d333b; color: #8b949e; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .addr-col { color: #8b949e; font-size: 0.85rem; word-break: break-all; }
+        .progress-bar-custom { height: 4px; background-color: #627eea; transition: width 0.3s ease; width: 0%; }
+        .progress-container { background: #2d333b; border-radius: 2px; height: 4px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -19,35 +21,37 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <div class="text-center mb-5">
-                <h1 class="display-6 fw-bold"><span class="eth-blue">ETH</span> Professional Batch Checker</h1>
-                <p class="text-muted small">Tvůj uzel: <span class="badge bg-dark border border-secondary font-monospace">eth-mainnet.g.alchemy.com</span></p>
-            </div>
-
             <div class="card-custom mb-4">
-                <div class="total-box d-flex justify-content-between align-items-end">
+                <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <label class="form-label small text-uppercase text-secondary fw-bold">Vlož Ethereum adresy (0x...)</label>
+                        <h2 class="mb-0 fw-bold">ETH <span style="color:#627eea">Pro</span> Batcher</h2>
+                        <span class="status-badge mt-2 d-inline-block">API KEY: 5U88...4ME9</span>
                     </div>
                     <div class="text-end">
-                        <div class="small text-secondary fw-bold">CELKOVÝ ZŮSTATEK</div>
-                        <h2 class="mb-0 eth-blue"><span id="totalEth">0.000000</span> ETH</h2>
+                        <small class="text-muted fw-bold text-uppercase">Součet zůstatků</small>
+                        <div class="total-display"><span id="totalEth">0.000000</span> <small class="fs-4">ETH</small></div>
                     </div>
                 </div>
 
-                <textarea id="addressInput" class="form-control mb-4" placeholder="0x0000000000000000000000000000000000000000"></textarea>
-                
-                <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold" onclick="processEth()">SPUSTIT ANALÝZU</button>
-                <div id="statusInfo" class="text-center mt-3 small text-muted"></div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-uppercase text-muted">Vložte Ethereum adresy (0x...)</label>
+                    <textarea id="addressInput" class="form-control" placeholder="Vložte adresy, každou na nový řádek..."></textarea>
+                    <div class="progress-container"><div id="progressBar" class="progress-bar-custom"></div></div>
+                </div>
+
+                <button id="runBtn" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" onclick="runEtherscan()">
+                    SPUSTIT RYCHLOU KONTROLU (20 ADRES / BATCH)
+                </button>
+                <div id="statusInfo" class="text-center mt-3 small text-muted font-monospace">PŘIPRAVENO</div>
             </div>
 
-            <div id="resultsArea" class="d-none mt-4">
-                <div class="card-custom p-0 overflow-hidden">
+            <div id="resultsArea" class="d-none">
+                <div class="card-custom p-0 overflow-hidden border-secondary">
                     <table class="table table-dark table-hover mb-0">
                         <thead>
-                            <tr>
-                                <th class="ps-4 text-muted small">ADRESA</th>
-                                <th class="text-end pe-4 text-muted small">ZŮSTATEK (ETH)</th>
+                            <tr class="bg-dark">
+                                <th class="ps-4 border-secondary small text-muted">ADRESA</th>
+                                <th class="text-end pe-4 border-secondary small text-muted">ZŮSTATEK (ETH)</th>
                             </tr>
                         </thead>
                         <tbody id="resultBody"></tbody>
@@ -59,85 +63,86 @@
 </div>
 
 <script>
-// Tvůj Alchemy link
-const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
+// Tvůj klíč je vložen přímo zde
+const ETHERSCAN_KEY = "5U88UQ4T3UIC9C3MGUGN8V6G53WX214ME9";
 
-async function processEth() {
+async function runEtherscan() {
     const input = document.getElementById('addressInput').value;
-    const addresses = input.split('\n')
-        .map(a => a.trim())
+    const addresses = input.split(/[\n,]+/)
+        .map(a => a.trim().toLowerCase())
         .filter(a => a.startsWith('0x') && a.length === 42);
 
-    if (addresses.length === 0) return alert("Vložte platné Ethereum adresy začínající 0x!");
+    if (addresses.length === 0) return alert("Prosím vložte platné ETH adresy!");
 
     const btn = document.getElementById('runBtn');
     const list = document.getElementById('resultBody');
     const totalDisp = document.getElementById('totalEth');
     const status = document.getElementById('statusInfo');
+    const progressBar = document.getElementById('progressBar');
     
-    // UI Reset
+    // Reset UI
     btn.disabled = true;
     document.getElementById('resultsArea').classList.remove('d-none');
     list.innerHTML = '';
     let totalWei = BigInt(0);
+    
+    // Etherscan balancemulti zvládá 20 adres najednou
+    const BATCH_SIZE = 20; 
+    const totalBatches = Math.ceil(addresses.length / BATCH_SIZE);
 
-    for (let i = 0; i < addresses.length; i++) {
-        const addr = addresses[i];
-        status.innerText = `Kontroluji ${i + 1} z ${addresses.length}...`;
+    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+        const chunk = addresses.slice(i, i + BATCH_SIZE);
+        const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
+        
+        status.innerText = `SKENOVÁNÍ DÁVKY ${currentBatch} Z ${totalBatches}...`;
+        progressBar.style.width = `${(currentBatch / totalBatches) * 100}%`;
+
+        // URL pro multi-balance dotaz
+        const url = `https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest&apikey=${ETHERSCAN_KEY}`;
 
         try {
-            // Posíláme JSON-RPC dotaz na tvůj Alchemy link
-            const response = await fetch(ALCHEMY_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: "2.0",
-                    id: i,
-                    method: "eth_getBalance",
-                    params: [addr, "latest"]
-                })
-            });
-
+            const response = await fetch(url);
             const data = await response.json();
 
-            if (data.result) {
-                // Převod z hexadecimálního Wei na čitelné ETH
-                const wei = BigInt(data.result);
-                totalWei += wei;
-                
-                // Přehledné formátování (18 nul dolu)
-                const ethValue = (Number(wei) / 1e18).toFixed(6);
-
-                list.insertAdjacentHTML('beforeend', `
-                    <tr class="border-secondary">
-                        <td class="ps-4 font-monospace small" style="color:#9ca3af">${addr}</td>
-                        <td class="text-end pe-4 eth-val">${ethValue} ETH</td>
-                    </tr>
-                `);
-                
-                // Průběžná aktualizace celkového součtu
+            if (data.status === "1" && Array.isArray(data.result)) {
+                let htmlChunk = "";
+                data.result.forEach(item => {
+                    const balanceWei = BigInt(item.balance);
+                    totalWei += balanceWei;
+                    const eth = (Number(balanceWei) / 1e18).toFixed(6);
+                    
+                    htmlChunk += `
+                        <tr class="border-secondary">
+                            <td class="ps-4 py-2 font-monospace addr-col text-break">${item.account}</td>
+                            <td class="text-end pe-4 py-2 eth-val">${eth} ETH</td>
+                        </tr>`;
+                });
+                list.insertAdjacentHTML('beforeend', htmlChunk);
                 totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
-            } else if (data.error) {
-                throw new Error(data.error.message);
             } else {
-                throw new Error("Neplatná odpověď");
+                // Pokud přijde error (např. rate limit), počkáme a zkusíme to znovu
+                if (data.result && data.result.includes("Rate limit")) {
+                    status.innerText = "RATE LIMIT DOSAŽEN. ČEKÁM 1 SEKUNDU...";
+                    await new Promise(r => setTimeout(r, 1000));
+                    i -= BATCH_SIZE; 
+                    continue;
+                }
+                throw new Error(data.message || "Chyba API");
             }
 
         } catch (e) {
             console.error(e);
-            list.insertAdjacentHTML('beforeend', `
-                <tr>
-                    <td class="ps-4 text-danger small">${addr}</td>
-                    <td class="text-end pe-4 text-danger small font-bold">Chyba API (Ověř uzel v Alchemy)</td>
-                </tr>
-            `);
+            chunk.forEach(a => {
+                list.insertAdjacentHTML('beforeend', `<tr><td class="ps-4 text-danger small">${a}</td><td class="text-end pe-4 text-danger small font-bold">Error</td></tr>`);
+            });
         }
-        
-        // Alchemy povoluje vysokou rychlost, tak jen symbolická pauza 50ms
-        await new Promise(r => setTimeout(r, 50));
+
+        // Limit Etherscan Free je 5REQ/s (200ms pauza je ideální)
+        await new Promise(r => setTimeout(r, 220));
     }
 
-    status.innerText = "Všechny adresy byly zkontrolovány.";
+    status.innerText = `HOTOVO. CELKEM ZKONTROLOVÁNO ${addresses.length} ADRES.`;
+    progressBar.style.width = '100%';
     btn.disabled = false;
 }
 </script>
