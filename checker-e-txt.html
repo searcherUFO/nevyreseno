@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Zero-Loss Scanner + File Support</title>
+    <title>ETH Zero-Loss Scanner + WakeLock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: 'Consolas', monospace; }
@@ -25,6 +25,7 @@
                 <div class="mt-2">
                     <span id="engine1" class="status-pill text-success">ETHER SCAN: OK</span>
                     <span id="engine2" class="status-pill text-primary ps-2">ALCHEMY: OK</span>
+                    <span id="lockStatus" class="status-pill text-warning d-none">WAKE LOCK: AKTIVNÍ</span>
                 </div>
             </div>
             <div class="col-md-5 text-end">
@@ -33,7 +34,6 @@
             </div>
         </div>
 
-        <!-- Nové pole pro nahrání souboru -->
         <div class="file-input-wrapper">
             <label class="d-block mb-2 small text-uppercase fw-bold">Načíst adresy ze souboru (.txt)</label>
             <input type="file" id="fileInput" class="form-control" accept=".txt">
@@ -60,7 +60,29 @@
 const ETHERSCAN_KEY = "5U88UQ4T3UIC9C3MGUGN8V6G53WX214ME9";
 const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
 
-// Pomocná funkce pro čtení souboru
+let wakeLock = null;
+
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            document.getElementById('lockStatus').classList.remove('d-none');
+            console.log('Wake Lock je aktivní.');
+        }
+    } catch (err) {
+        console.error(`Chyba Wake Lock: ${err.name}, ${err.message}`);
+    }
+}
+
+function releaseWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release();
+        wakeLock = null;
+        document.getElementById('lockStatus').classList.add('d-none');
+        console.log('Wake Lock byl uvolněn.');
+    }
+}
+
 function readFileAsync(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -80,7 +102,6 @@ async function startEngine() {
 
     let rawInput = "";
 
-    // 1. Zjistíme, odkud brát data (soubor má přednost)
     if (fileInput.files.length > 0) {
         status.innerText = "Načítám soubor...";
         rawInput = await readFileAsync(fileInput.files[0]);
@@ -88,12 +109,14 @@ async function startEngine() {
         rawInput = textArea.value;
     }
 
-    // 2. Extrakce adres
     const addresses = rawInput.split(/[\n, \r]+/)
         .map(a => a.trim().toLowerCase())
         .filter(a => a.startsWith('0x') && a.length === 42);
     
     if (addresses.length === 0) return alert("Vložte platné ETH adresy nebo vyberte soubor!");
+
+    // AKTIVACE WAKE LOCKU
+    await requestWakeLock();
 
     btn.disabled = true;
     foundBody.innerHTML = '';
@@ -102,66 +125,71 @@ async function startEngine() {
 
     const BATCH_SIZE = 20;
     
-    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-        const chunk = addresses.slice(i, i + BATCH_SIZE);
-        status.innerText = `Prověřuji: ${i + chunk.length} / ${addresses.length} adres...`;
+    try {
+        for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+            const chunk = addresses.slice(i, i + BATCH_SIZE);
+            status.innerText = `Prověřuji: ${i + chunk.length} / ${addresses.length} adres...`;
 
-        let resultData = null;
-        
-        // --- 1. POKUS: ETHERSCAN ---
-        try {
-            const res = await fetch(`https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest&apikey=${ETHERSCAN_KEY}`);
-            const data = await res.json();
-            if (data.status === "1" && Array.isArray(data.result)) {
-                resultData = data.result.map(r => ({ addr: r.account, bal: r.balance }));
-            }
-        } catch (e) {
-            console.log("Etherscan selhal...");
-        }
-
-        // --- 2. POKUS: ALCHEMY ---
-        if (!resultData) {
+            let resultData = null;
+            
             try {
-                const payload = chunk.map((addr, idx) => ({ jsonrpc: "2.0", id: idx, method: "eth_getBalance", params: [addr, "latest"] }));
-                const res = await fetch(ALCHEMY_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const res = await fetch(`https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest&apikey=${ETHERSCAN_KEY}`);
                 const data = await res.json();
-                if (Array.isArray(data)) {
-                    resultData = data.map((d, idx) => ({ addr: chunk[idx], bal: d.result || "0x0" }));
+                if (data.status === "1" && Array.isArray(data.result)) {
+                    resultData = data.result.map(r => ({ addr: r.account, bal: r.balance }));
                 }
             } catch (e) {
-                status.innerText = "Chyba připojení, čekám 2s...";
-                await new Promise(r => setTimeout(r, 2000));
-                i -= BATCH_SIZE; 
-                continue;
+                console.log("Etherscan selhal...");
             }
-        }
 
-        // --- ZPRACOVÁNÍ ---
-        if (resultData) {
-            resultData.forEach(item => {
-                const wei = BigInt(item.bal);
-                if (wei > 0n) {
-                    totalWei += wei;
-                    const eth = (Number(wei) / 1e18).toFixed(6);
-                    document.getElementById('foundArea').classList.remove('d-none');
-                    foundBody.insertAdjacentHTML('afterbegin', `
-                        <tr>
-                            <td class="ps-3 py-2 font-monospace small" style="color:#8b949e">${item.addr}</td>
-                            <td class="text-end pe-3 py-2 text-success fw-bold">${eth} ETH</td>
-                        </tr>
-                    `);
+            if (!resultData) {
+                try {
+                    const payload = chunk.map((addr, idx) => ({ jsonrpc: "2.0", id: idx, method: "eth_getBalance", params: [addr, "latest"] }));
+                    const res = await fetch(ALCHEMY_URL, { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload) 
+                    });
+                    const data = await res.json();
+                    if (Array.isArray(data)) {
+                        resultData = data.map((d, idx) => ({ addr: chunk[idx], bal: d.result || "0x0" }));
+                    }
+                } catch (e) {
+                    status.innerText = "Chyba připojení, čekám 2s...";
+                    await new Promise(r => setTimeout(r, 2000));
+                    i -= BATCH_SIZE; 
+                    continue;
                 }
-            });
-            totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
+            }
+
+            if (resultData) {
+                resultData.forEach(item => {
+                    const wei = BigInt(item.bal);
+                    if (wei > 0n) {
+                        totalWei += wei;
+                        const eth = (Number(wei) / 1e18).toFixed(6);
+                        document.getElementById('foundArea').classList.remove('d-none');
+                        foundBody.insertAdjacentHTML('afterbegin', `
+                            <tr>
+                                <td class="ps-3 py-2 font-monospace small" style="color:#8b949e">${item.addr}</td>
+                                <td class="text-end pe-3 py-2 text-success fw-bold">${eth} ETH</td>
+                            </tr>
+                        `);
+                    }
+                });
+                totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
+            }
+
+            // Krátká pauza pro UI reaktivitu
+            await new Promise(r => setTimeout(r, 100));
         }
-
-        // Anti-throttle pauza
-        await new Promise(r => setTimeout(r, 200));
+    } finally {
+        // UVOLNĚNÍ WAKE LOCKU PO DOKONČENÍ
+        releaseWakeLock();
+        const duration = ((performance.now() - start) / 1000).toFixed(2);
+        status.innerHTML = `<span class="text-success fw-bold">HOTOVO! ${addresses.length} adres za ${duration}s.</span>`;
+        btn.disabled = false;
     }
-
-    const duration = ((performance.now() - start) / 1000).toFixed(2);
-    status.innerHTML = `<span class="text-success fw-bold">HOTOVO! ${addresses.length} adres prověřeno za ${duration}s.</span>`;
-    btn.disabled = false;
 }
 </script>
 </body>
