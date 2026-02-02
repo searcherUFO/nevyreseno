@@ -2,110 +2,107 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Mobile Scanner (Stay Awake)</title>
+    <title>ETH Zero-Loss Scanner + WakeLock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: 'Consolas', monospace; }
-        .main-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; }
-        .total-display { font-size: 2rem; color: #58a6ff; font-weight: bold; }
-        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; background: #21262d; margin-right: 5px; }
-        textarea { background-color: #010409 !important; color: #58a6ff !important; border: 1px solid #30363d !important; height: 120px; font-size: 12px; }
-        /* Skryté video pro hack */
-        #noSleepVideo { position: absolute; left: -999px; top: -999px; width: 1px; height: 1px; opacity: 0; }
+        .main-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 25px; }
+        textarea { background-color: #010409 !important; color: #58a6ff !important; border: 1px solid #30363d !important; height: 150px; font-size: 13px; }
+        .eth-val { color: #2ecc71; font-weight: bold; }
+        .total-display { font-size: 2.5rem; color: #58a6ff; font-weight: bold; text-shadow: 0 0 15px rgba(88, 166, 255, 0.3); }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; background: #21262d; }
+        .file-input-wrapper { background: #21262d; border: 1px dashed #30363d; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
+        #wakeLockStatus { font-size: 0.7rem; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
 
-<div class="container py-3">
-    <div class="main-card shadow-lg mb-3">
-        <h4 class="fw-bold mb-3">ETH <span style="color:#58a6ff">UltraVigil</span> Scanner</h4>
-        
-        <div class="mb-3">
-            <span id="lockStatus" class="status-pill text-danger">OBRAZOVKA: VYPNUTA</span>
-            <span id="engineStatus" class="status-pill text-primary">KLIDOVÝ STAV</span>
+<div class="container py-4">
+    <div class="main-card shadow-lg mb-4">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-7">
+                <h2 class="fw-bold mb-0">ETH <span style="color:#58a6ff">Zero-Loss</span> Engine</h2>
+                <div class="mt-2 text-uppercase">
+                    <span id="engine1" class="status-pill text-success">ETHER SCAN: OK</span>
+                    <span id="engine2" class="status-pill text-primary ps-2">ALCHEMY: OK</span>
+                    <span id="wakeLockStatus" class="text-muted">Wake Lock: Neaktivní</span>
+                </div>
+            </div>
+            <div class="col-md-5 text-end">
+                <small class="text-muted fw-bold">CELKEM NAJDENO</small>
+                <div class="total-display"><span id="totalEth">0.000000</span> ETH</div>
+            </div>
         </div>
 
-        <div class="text-end mb-3">
-            <small class="text-muted d-block">CELKEM NAJDENO</small>
-            <div class="total-display"><span id="totalEth">0.0000</span> ETH</div>
+        <div class="file-input-wrapper">
+            <label class="d-block mb-2 small text-uppercase fw-bold">Načíst adresy ze souboru (.txt)</label>
+            <input type="file" id="fileInput" class="form-control" accept=".txt">
         </div>
 
-        <input type="file" id="fileInput" class="form-control mb-3" accept=".txt">
-        <textarea id="addressInput" class="form-control mb-3" placeholder="Vložte adresy..."></textarea>
+        <textarea id="addressInput" class="form-control mb-3" placeholder="Vložte adresy ručně nebo vyberte soubor..."></textarea>
 
-        <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold py-3" onclick="bootScanner()">SPUSTIT A ZAMKNOUT DISPLEJ</button>
+        <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold py-3" onclick="startEngine()">SPUSTIT GARANTOVANÝ SKEN</button>
         <div id="progressInfo" class="text-center mt-3 small text-muted"></div>
     </div>
 
-    <!-- Nalezené peněženky -->
     <div id="foundArea" class="d-none">
+        <h5 class="text-success fw-bold mb-3">! NALEZENÉ PENĚŽENKY !</h5>
         <div class="main-card p-0 overflow-hidden">
-            <table class="table table-dark table-sm mb-0">
+            <table class="table table-dark table-hover mb-0">
                 <tbody id="foundBody"></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- Video Element pro NoSleep Hack -->
-<video id="noSleepVideo" playsinline loop muted></video>
-
 <script>
+const ETHERSCAN_KEY = "5U88UQ4T3UIC9C3MGUGN8V6G53WX214ME9";
 const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
 
 let wakeLock = null;
-const video = document.getElementById('noSleepVideo');
 
-// 1. VIDEO HACK (Pro iOS a starší Androidy)
-// Malý kousek Base64 videa (prázdné video o délce 0.1s)
-const noSleepVideoSrc = "data:video/webm;base64,GkXfo0AgQoaBAULBaXf38gEAf4BAK6o98gSAgEAVbu70nPGSNoK77u6T8pS9u7uT8pS9u7uT8pS9u7uSAf4BAK6o98gSAgEAVbu70nPGSNoK77u6T8pS9u7uT8pS9u7uT8pS9u7uQ";
-
-async function enableNoSleep() {
+// Funkce pro zabránění vypnutí obrazovky
+async function requestWakeLock() {
     try {
-        video.src = noSleepVideoSrc;
-        await video.play();
-        document.getElementById('lockStatus').innerText = "OBRAZOVKA: ZAMČENA (VIDEO)";
-        document.getElementById('lockStatus').className = "status-pill text-success";
-    } catch (err) {
-        console.log("Video hack selhal, zkusíme WakeLock API...");
-    }
-}
-
-// 2. NATIVNÍ WAKELOCK (Pro moderní Chrome/Android)
-async function enableWakeLock() {
-    if ('wakeLock' in navigator) {
-        try {
+        if ('wakeLock' in navigator) {
             wakeLock = await navigator.wakeLock.request('screen');
-            document.getElementById('lockStatus').innerText = "OBRAZOVKA: ZAMČENA (API)";
-        } catch (err) {
-            console.error(err);
+            document.getElementById('wakeLockStatus').innerText = "Wake Lock: AKTIVNÍ (Obrazovka se nevypne)";
+            document.getElementById('wakeLockStatus').classList.replace('text-muted', 'text-warning');
+            
+            wakeLock.addEventListener('release', () => {
+                console.log('Wake Lock uvolněn');
+            });
         }
+    } catch (err) {
+        console.error(`${err.name}, ${err.message}`);
+        document.getElementById('wakeLockStatus').innerText = "Wake Lock: CHYBA (Pravděpodobně nejste na HTTPS)";
     }
 }
 
-async function bootScanner() {
-    // KLÍČOVÉ: Musíme aktivovat video i wake lock hned po kliknutí (User Interaction)
-    await enableNoSleep();
-    await enableWakeLock();
-    
-    startEngine();
+function readFileAsync(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsText(file);
+    });
 }
 
 async function startEngine() {
+    // Aktivace Wake Lock (zabránění spánku)
+    await requestWakeLock();
+
     const btn = document.getElementById('runBtn');
     const fileInput = document.getElementById('fileInput');
     const textArea = document.getElementById('addressInput');
-    const status = document.getElementById('progressInfo');
-    const foundBody = document.getElementById('foundBody');
     const totalDisp = document.getElementById('totalEth');
+    const foundBody = document.getElementById('foundBody');
+    const status = document.getElementById('progressInfo');
 
     let rawInput = "";
     if (fileInput.files.length > 0) {
-        const reader = new FileReader();
-        rawInput = await new Promise(r => {
-            reader.onload = (e) => r(e.target.result);
-            reader.readAsText(fileInput.files[0]);
-        });
+        status.innerText = "Načítám soubor...";
+        rawInput = await readFileAsync(fileInput.files[0]);
     } else {
         rawInput = textArea.value;
     }
@@ -113,62 +110,84 @@ async function startEngine() {
     const addresses = rawInput.split(/[\n, \r]+/)
         .map(a => a.trim().toLowerCase())
         .filter(a => a.startsWith('0x') && a.length === 42);
-
-    if (addresses.length === 0) return alert("Žádné adresy!");
-
-    btn.disabled = true;
-    let totalWei = BigInt(0);
-    const BATCH_SIZE = 100;
-
-    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-        const chunk = addresses.slice(i, i + BATCH_SIZE);
-        status.innerText = `Sken: ${i + chunk.length} / ${addresses.length}`;
-
-        try {
-            const payload = chunk.map((addr, idx) => ({ jsonrpc: "2.0", id: idx, method: "eth_getBalance", params: [addr, "latest"] }));
-            const res = await fetch(ALCHEMY_URL, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload) 
-            });
-            const data = await res.json();
-
-            if (Array.isArray(data)) {
-                data.forEach((d, idx) => {
-                    const wei = BigInt(d.result || "0x0");
-                    if (wei > 0n) {
-                        totalWei += wei;
-                        document.getElementById('foundArea').classList.remove('d-none');
-                        foundBody.insertAdjacentHTML('afterbegin', `
-                            <tr>
-                                <td class="ps-2 py-1 small">${chunk[idx].substring(0,10)}...</td>
-                                <td class="text-end pe-2 py-1 text-success fw-bold">${(Number(wei)/1e18).toFixed(4)}</td>
-                            </tr>
-                        `);
-                    }
-                });
-                totalDisp.innerText = (Number(totalWei)/1e18).toFixed(4);
-            }
-        } catch (e) {
-            await new Promise(r => setTimeout(r, 1000));
-            i -= BATCH_SIZE;
-        }
-        
-        // Důležité pro mobilní prohlížeč, aby "dýchal"
-        await new Promise(r => setTimeout(r, 50));
+    
+    if (addresses.length === 0) {
+        if (wakeLock) wakeLock.release();
+        return alert("Vložte platné ETH adresy!");
     }
 
-    // Po dokončení uvolnit
-    if (wakeLock) wakeLock.release();
-    video.pause();
-    document.getElementById('lockStatus').innerText = "DOKONČENO";
+    btn.disabled = true;
+    foundBody.innerHTML = '';
+    let totalWei = BigInt(0);
+    const start = performance.now();
+
+    const BATCH_SIZE = 20;
+    
+    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+        const chunk = addresses.slice(i, i + BATCH_SIZE);
+        status.innerText = `Prověřuji: ${i + chunk.length} / ${addresses.length} adres...`;
+
+        let resultData = null;
+        
+        try {
+            const res = await fetch(`https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest&apikey=${ETHERSCAN_KEY}`);
+            const data = await res.json();
+            if (data.status === "1" && Array.isArray(data.result)) {
+                resultData = data.result.map(r => ({ addr: r.account, bal: r.balance }));
+            }
+        } catch (e) { console.log("Etherscan selhal..."); }
+
+        if (!resultData) {
+            try {
+                const payload = chunk.map((addr, idx) => ({ jsonrpc: "2.0", id: idx, method: "eth_getBalance", params: [addr, "latest"] }));
+                const res = await fetch(ALCHEMY_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    resultData = data.map((d, idx) => ({ addr: chunk[idx], bal: d.result || "0x0" }));
+                }
+            } catch (e) {
+                status.innerText = "Chyba, čekám 2s...";
+                await new Promise(r => setTimeout(r, 2000));
+                i -= BATCH_SIZE; 
+                continue;
+            }
+        }
+
+        if (resultData) {
+            resultData.forEach(item => {
+                const wei = BigInt(item.bal);
+                if (wei > 0n) {
+                    totalWei += wei;
+                    const eth = (Number(wei) / 1e18).toFixed(6);
+                    document.getElementById('foundArea').classList.remove('d-none');
+                    foundBody.insertAdjacentHTML('afterbegin', `
+                        <tr><td class="ps-3 py-2 font-monospace small" style="color:#8b949e">${item.addr}</td>
+                        <td class="text-end pe-3 py-2 text-success fw-bold">${eth} ETH</td></tr>
+                    `);
+                }
+            });
+            totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
+        }
+        await new Promise(r => setTimeout(r, 200));
+    }
+
+    const duration = ((performance.now() - start) / 1000).toFixed(2);
+    status.innerHTML = `<span class="text-success fw-bold">HOTOVO! ${addresses.length} adres / ${duration}s.</span>`;
     btn.disabled = false;
+
+    // Uvolnění obrazovky po skončení práce
+    if (wakeLock) {
+        await wakeLock.release();
+        wakeLock = null;
+        document.getElementById('wakeLockStatus').innerText = "Wake Lock: UVOLNĚN (Sken skončil)";
+        document.getElementById('wakeLockStatus').classList.replace('text-warning', 'text-muted');
+    }
 }
 
-// Pokud uživatel přepne kartu a vrátí se, musíme lock obnovit
+// Pokud uživatel přepne aplikaci a vrátí se, lock se musí obnovit
 document.addEventListener('visibilitychange', async () => {
     if (wakeLock !== null && document.visibilityState === 'visible') {
-        wakeLock = await navigator.wakeLock.request('screen');
+        await requestWakeLock();
     }
 });
 </script>
