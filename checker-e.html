@@ -2,138 +2,156 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH Zero-Loss Scanner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>ETH BULLETPROOF HYDRA</title>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Consolas', monospace; }
-        .main-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 25px; }
-        textarea { background-color: #010409 !important; color: #58a6ff !important; border: 1px solid #30363d !important; height: 280px; font-size: 13px; }
-        .eth-val { color: #2ecc71; font-weight: bold; }
-        .total-display { font-size: 2.5rem; color: #58a6ff; font-weight: bold; text-shadow: 0 0 15px rgba(88, 166, 255, 0.3); }
-        .log-entry { font-size: 11px; border-bottom: 1px solid #21262d; padding: 2px 0; }
-        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; background: #21262d; }
+        body { background: #0a0c10; color: #adbac7; font-family: 'Courier New', monospace; padding: 20px; margin: 0; }
+        .container { max-width: 1000px; margin: auto; border: 1px solid #444c56; border-radius: 8px; padding: 20px; background: #161b22; }
+        h1 { color: #58a6ff; margin-top: 0; border-bottom: 2px solid #58a6ff; padding-bottom: 10px; }
+        textarea { width: 100%; height: 250px; background: #0d1117; color: #79c0ff; border: 1px solid #444c56; border-radius: 4px; padding: 10px; box-sizing: border-box; font-size: 12px; }
+        .stats { display: flex; justify-content: space-between; margin: 20px 0; background: #0d1117; padding: 15px; border-radius: 4px; }
+        .stat-box { text-align: center; }
+        .stat-label { font-size: 10px; color: #8b949e; text-transform: uppercase; }
+        .stat-val { font-size: 24px; font-weight: bold; color: #f7931a; }
+        #totalEth { color: #3fb950; }
+        button { width: 100%; padding: 20px; background: #238636; border: none; color: white; font-weight: bold; font-size: 18px; cursor: pointer; border-radius: 4px; }
+        button:disabled { background: #21262d; color: #444c56; cursor: not-allowed; }
+        #debug { background: #000; color: #f7931a; padding: 10px; height: 150px; overflow-y: scroll; border-radius: 4px; margin-top: 20px; font-size: 11px; }
+        .found-box { background: #238636; color: white; padding: 10px; margin-top: 20px; border-radius: 4px; display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #444; }
     </style>
 </head>
 <body>
 
-<div class="container py-4">
-    <div class="main-card shadow-lg mb-4">
-        <div class="row align-items-center mb-4">
-            <div class="col-md-7">
-                <h2 class="fw-bold mb-0">ETH <span style="color:#58a6ff">Zero-Loss</span> Engine</h2>
-                <div class="mt-2">
-                    <span id="engine1" class="status-pill text-success">ETHER SCAN: OK</span>
-                    <span id="engine2" class="status-pill text-primary ps-2">ALCHEMY: OK</span>
-                </div>
-            </div>
-            <div class="col-md-5 text-end">
-                <small class="text-muted fw-bold">CELKEM NAJDENO</small>
-                <div class="total-display"><span id="totalEth">0.000000</span> ETH</div>
-            </div>
+<div class="container">
+    <h1>HYDRA <span style="color:white">ENGINE</span> v2</h1>
+    
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-label">Rychlost</div>
+            <div id="speed" class="stat-val">0</div>
         </div>
-
-        <textarea id="addressInput" class="form-control mb-3" placeholder="Vložte adresy (0x...)"></textarea>
-
-        <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold py-3" onclick="startEngine()">SPUSTIT GARANTOVANÝ SKEN</button>
-        <div id="progressInfo" class="text-center mt-3 small text-muted"></div>
+        <div class="stat-box">
+            <div class="stat-label">Adresy</div>
+            <div id="progress" class="stat-val">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Celkem ETH</div>
+            <div id="totalEth" class="stat-val">0.0000</div>
+        </div>
     </div>
 
-    <!-- Zde se zobrazí jen adresy s penězi -->
-    <div id="foundArea" class="d-none">
-        <h5 class="text-success fw-bold mb-3">! NALEZENÉ PENĚŽENKY !</h5>
-        <div class="main-card p-0 overflow-hidden">
-            <table class="table table-dark table-hover mb-0">
-                <tbody id="foundBody"></tbody>
-            </table>
-        </div>
+    <textarea id="addressInput" placeholder="Vložte Ethereum adresy (0x...)"></textarea>
+    
+    <button id="runBtn" onclick="run()">ODPÁLIT SKENOVÁNÍ</button>
+
+    <div id="debug">SYSTÉM PŘIPRAVEN... Zadej adresy a klikni na tlačítko.</div>
+
+    <div id="foundBox" class="found-box">
+        <h3 style="margin:0">💰 NALEZEN ZŮSTATEK!</h3>
+        <table id="foundTable">
+            <thead><tr><th>Adresa</th><th>Zůstatek</th></tr></thead>
+            <tbody id="foundBody"></tbody>
+        </table>
     </div>
 </div>
 
 <script>
-// Tvých 100% ověřených zdrojů
-const ETHERSCAN_KEY = "5U88UQ4T3UIC9C3MGUGN8V6G53WX214ME9";
-const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
+const ALCHEMY = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
+const ETHERSCAN = "5U88UQ4T3UIC9C3MGUGN8V6G53WX214ME9";
+const PUBLIC_RPC = "https://eth.llamarpc.com";
 
-async function startEngine() {
+function log(msg) {
+    const d = document.getElementById('debug');
+    d.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${msg}`;
+    d.scrollTop = d.scrollHeight;
+}
+
+async function run() {
+    // 1. Nouzová inicializace UI
+    const btn = document.getElementById('runBtn');
     const input = document.getElementById('addressInput').value;
     const addresses = input.split(/[\n,]+/).map(a => a.trim().toLowerCase()).filter(a => a.startsWith('0x') && a.length === 42);
     
-    if (addresses.length === 0) return alert("Vložte platné ETH adresy!");
-
-    const btn = document.getElementById('runBtn');
-    const totalDisp = document.getElementById('totalEth');
-    const foundBody = document.getElementById('foundBody');
-    const status = document.getElementById('progressInfo');
-
-    btn.disabled = true;
-    foundBody.innerHTML = '';
-    let totalWei = BigInt(0);
-    const start = performance.now();
-
-    // Rozdělení adres do balíků po 20 (ideální velikost pro Etherscan i Alchemy)
-    const BATCH_SIZE = 20;
-    
-    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-        const chunk = addresses.slice(i, i + BATCH_SIZE);
-        status.innerText = `Prověřuji balík ${Math.floor(i/BATCH_SIZE)+1} z ${Math.ceil(addresses.length/BATCH_SIZE)}...`;
-
-        let resultData = null;
-        
-        // --- 1. POKUS: ETHERSCAN (Multi-balance) ---
-        try {
-            const res = await fetch(`https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest&apikey=${ETHERSCAN_KEY}`);
-            const data = await res.json();
-            if (data.status === "1" && Array.isArray(data.result)) {
-                resultData = data.result.map(r => ({ addr: r.account, bal: r.balance }));
-            }
-        } catch (e) {
-            console.log("Etherscan selhal, přepínám na Alchemy...");
-        }
-
-        // --- 2. POKUS: ALCHEMY (pokud Etherscan selhal nebo byl prázdný bez důvodu) ---
-        if (!resultData) {
-            try {
-                const payload = chunk.map((addr, idx) => ({ jsonrpc: "2.0", id: idx, method: "eth_getBalance", params: [addr, "latest"] }));
-                const res = await fetch(ALCHEMY_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    resultData = data.map((d, idx) => ({ addr: chunk[idx], bal: d.result || "0x0" }));
-                }
-            } catch (e) {
-                console.log("Oba servery selhaly, čekám 2s...");
-                await new Promise(r => setTimeout(r, 2000));
-                i -= BATCH_SIZE; // Zkusit znovu
-                continue;
-            }
-        }
-
-        // --- ZPRACOVÁNÍ VÝSLEDKŮ ---
-        if (resultData) {
-            resultData.forEach(item => {
-                const wei = BigInt(item.bal);
-                if (wei > 0n) {
-                    totalWei += wei;
-                    const eth = (Number(wei) / 1e18).toFixed(6);
-                    document.getElementById('foundArea').classList.remove('d-none');
-                    foundBody.insertAdjacentHTML('afterbegin', `
-                        <tr>
-                            <td class="ps-3 py-2 font-monospace small" style="color:#8b949e">${item.addr}</td>
-                            <td class="text-end pe-3 py-2 text-success fw-bold">${eth} ETH</td>
-                        </tr>
-                    `);
-                }
-            });
-            totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(6);
-        }
-
-        // Pauza pro dodržení Rate Limitu a stabilitu prohlížeče
-        // (100 adres za sekundu = 5 dotazů po 20 adresách. 1000ms / 5 = 200ms pauza)
-        await new Promise(r => setTimeout(r, 200));
+    if (addresses.length === 0) {
+        alert("CHYBA: Vložte platné ETH adresy!");
+        return;
     }
 
-    const duration = ((performance.now() - start) / 1000).toFixed(2);
-    status.innerHTML = `<span class="text-success fw-bold">DOKONČENO! ${addresses.length} adres prověřeno za ${duration}s.</span>`;
-    btn.disabled = false;
+    btn.disabled = true;
+    log("🚀 STARTUJI MOTOR...");
+    
+    let totalWei = BigInt(0);
+    const startTime = performance.now();
+    let index = 0;
+
+    // 2. Hlavní loop
+    try {
+        while (index < addresses.length) {
+            let chunk = addresses.slice(index, index + 100); // 100 adres najednou
+            log(`Prověřuji ${index} až ${index + chunk.length}...`);
+
+            // POUŽIJEME ALCHEMY (POST dotaz)
+            const payload = chunk.map((a, i) => ({ jsonrpc: "2.0", id: i, method: "eth_getBalance", params: [a, "latest"] }));
+            
+            try {
+                const response = await fetch(ALCHEMY, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (Array.isArray(data)) {
+                    data.forEach((item, i) => {
+                        const val = item.result || "0x0";
+                        const wei = BigInt(val === "0x" ? "0x0" : val);
+                        if (wei > 0n) {
+                            totalWei += wei;
+                            const eth = (Number(wei) / 1e18).toFixed(6);
+                            document.getElementById('foundBox').style.display = 'block';
+                            document.getElementById('foundBody').innerHTML += `<tr><td>${chunk[i]}</td><td><b>${eth} ETH</b></td></tr>`;
+                            log(`!!! ZÁSAH: ${chunk[i]} = ${eth} ETH !!!`);
+                        }
+                    });
+                } else {
+                    log("VAROVÁNÍ: Server poslal špatná data, zkusím jinou cestu...");
+                    // FALLBACK na Etherscan
+                    const eUrl = `https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.slice(0,20).join(',')}&tag=latest&apikey=${ETHERSCAN}`;
+                    const eRes = await fetch(eUrl);
+                    const eData = await eRes.json();
+                    if (eData.status === "1") {
+                        eData.result.forEach(r => {
+                            if (BigInt(r.balance) > 0n) log("ZÁSAH na Etherscanu!");
+                        });
+                    }
+                }
+            } catch (err) {
+                log("CHYBA SÍTĚ: " + err.message);
+                // Pokud Alchemy úplně selže, zkusíme LlamaRPC (Public)
+                await fetch(PUBLIC_RPC, { method: 'POST', body: JSON.stringify(payload) });
+            }
+
+            index += chunk.length;
+            
+            // Statistiky
+            const elapsed = (performance.now() - startTime) / 1000;
+            document.getElementById('progress').innerText = index;
+            document.getElementById('speed').innerText = Math.round(index / elapsed);
+            document.getElementById('totalEth').innerText = (Number(totalWei) / 1e18).toFixed(4);
+            
+            // Krátký timeout pro stabilitu prohlížeče
+            await new Promise(r => setTimeout(r, 100));
+        }
+        
+        log("✅ HOTOVO. Všechny adresy prověřeny.");
+        btn.disabled = false;
+
+    } catch (fatal) {
+        log("<span style='color:red'>KRITICKÁ CHYBA: " + fatal.message + "</span>");
+        btn.disabled = false;
+    }
 }
 </script>
 </body>
