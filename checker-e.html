@@ -2,151 +2,142 @@
 <html lang="cs">
 <head>
     <meta charset="utf-8">
-    <title>ETH 100/s Turbo</title>
+    <title>ETH Safe-Turbo 100/s</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: 'Consolas', monospace; }
         .main-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 25px; }
         textarea { background-color: #010409 !important; color: #58a6ff !important; border: 1px solid #30363d !important; height: 250px; font-size: 12px; }
-        .total-box { background: #010409; border: 2px solid #238636; border-radius: 8px; padding: 15px; text-align: center; }
-        .eth-val { color: #2ecc71; font-weight: bold; }
-        .progress { height: 5px; background-color: #30363d; }
-        .progress-bar { background-color: #238636; }
-        .found-table { font-size: 13px; }
+        .eth-green { color: #2ecc71; font-weight: bold; }
+        .eth-zero { color: #484f58; }
+        .total-box { background: #010409; border: 2px solid #58a6ff; border-radius: 8px; padding: 15px; text-align: center; }
+        .progress { height: 4px; background-color: #30363d; margin-top: 10px; }
+        .progress-bar { background-color: #58a6ff; transition: width 0.2s; }
+        .log-container { height: 300px; overflow-y: auto; background: #010409; padding: 10px; border-radius: 8px; border: 1px solid #30363d; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div class="container py-4">
-    <div class="main-card shadow-lg">
+    <div class="main-card shadow-lg mb-4">
         <div class="row align-items-center mb-4">
             <div class="col-md-7">
-                <h2 class="fw-bold mb-0">ETH <span style="color:#58a6ff">Ultra</span>-Scanner</h2>
-                <div id="status" class="small text-muted mt-1">Cíl: 100 adres / vteřinu</div>
+                <h2 class="fw-bold mb-0">ETH <span style="color:#58a6ff">True</span>-Scanner</h2>
+                <div id="status" class="small text-muted mt-1">Status: Připraven</div>
             </div>
             <div class="col-md-5">
                 <div class="total-box">
-                    <small class="text-muted fw-bold">CELKEM NAJDENO</small>
-                    <div class="h2 mb-0 eth-val"><span id="totalEth">0.0000</span> <small class="fs-6 text-white">ETH</small></div>
+                    <small class="text-muted fw-bold">CELKOVÝ ZŮSTATEK</small>
+                    <div class="h2 mb-0 text-white"><span id="totalEth" style="color:#2ecc71">0.0000</span> ETH</div>
                 </div>
             </div>
         </div>
 
-        <div class="mb-3">
-            <textarea id="addressInput" class="form-control" placeholder="Sem vložte tisíce ETH adres..."></textarea>
-            <div class="progress mt-2"><div id="progressBar" class="progress-bar" style="width: 0%"></div></div>
-        </div>
+        <textarea id="addressInput" class="form-control" placeholder="Vložte adresy (0x...)"></textarea>
+        <div class="progress"><div id="progressBar" class="progress-bar" style="width: 0%"></div></div>
 
-        <button id="runBtn" class="btn btn-primary btn-lg w-100 fw-bold" onclick="startTurbo()">SPUSTIT RYCHLÝ SKEN</button>
+        <button id="runBtn" class="btn btn-primary w-100 fw-bold mt-4 py-2" onclick="startCheck()">SPUSTIT SPOLEHLIVÝ SKEN</button>
     </div>
 
-    <!-- Zobrazení nalezených (pozitivních) adres -->
-    <div id="resultsArea" class="mt-4 d-none">
-        <h5 class="mb-3">Adresy se zůstatkem (<span id="foundCount">0</span>)</h5>
-        <div class="main-card p-0 overflow-hidden">
-            <table class="table table-dark table-sm mb-0 found-table">
-                <thead><tr><th class="ps-3 py-2">ADRESA</th><th class="text-end pe-3 py-2">ZŮSTATEK</th></tr></thead>
-                <tbody id="resultBody"></tbody>
-            </table>
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between small mb-2 text-muted fw-bold text-uppercase">
+                <span>Průběh skenování</span>
+                <span>Nalezeno s obnosem: <span id="positiveCount" class="text-success">0</span></span>
+            </div>
+            <div id="log" class="log-container"></div>
         </div>
     </div>
 </div>
 
 <script>
-// Hlavní Alchemy link + záložní veřejný uzel
-const ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
-const BACKUP_URL = "https://eth.llamarpc.com";
+const RPC_URL = "https://eth-mainnet.g.alchemy.com/v2/Aez99WycUrG8jncryndbA";
 
-async function startTurbo() {
+async function startCheck() {
     const input = document.getElementById('addressInput').value;
     const addresses = input.split('\n').map(a => a.trim().toLowerCase()).filter(a => a.startsWith('0x') && a.length === 42);
     
-    if (addresses.length === 0) return alert("Vložte platné 0x adresy!");
+    if (addresses.length === 0) return alert("Vložte platné ETH adresy!");
 
     const btn = document.getElementById('runBtn');
     const status = document.getElementById('status');
-    const list = document.getElementById('resultBody');
+    const logBox = document.getElementById('log');
     const totalDisp = document.getElementById('totalEth');
     const pBar = document.getElementById('progressBar');
-    const foundCount = document.getElementById('foundCount');
+    const posDisp = document.getElementById('positiveCount');
 
-    // UI Reset
     btn.disabled = true;
-    list.innerHTML = '';
+    logBox.innerHTML = '';
     let totalWei = BigInt(0);
-    let found = 0;
-    const startTime = performance.now();
-
-    // NASTAVENÍ: 50 adres na balík, 2 balíky paralelně
-    const BATCH_SIZE = 50; 
+    let positiveFound = 0;
     
-    for (let i = 0; i < addresses.length; i += BATCH_SIZE * 2) {
-        const p1 = fetchChunk(addresses.slice(i, i + BATCH_SIZE), i);
-        const p2 = fetchChunk(addresses.slice(i + BATCH_SIZE, i + BATCH_SIZE * 2), i + BATCH_SIZE);
-        
-        const results = await Promise.all([p1, p2]);
+    // NASTAVENÍ: 25 adres na balík (pro maximální úspěšnost u Alchemy)
+    const BATCH_SIZE = 25; 
 
-        results.forEach(batch => {
-            if (!batch) return;
-            batch.data.forEach((res, idx) => {
-                if (res.result && res.result !== "0x0") {
-                    const wei = BigInt(res.result);
-                    totalWei += wei;
-                    found++;
-                    const eth = (Number(wei) / 1e18).toFixed(6);
-                    
-                    // Do tabulky přidáváme pouze pokud je zůstatek > 0 (šetříme RAM)
-                    list.insertAdjacentHTML('afterbegin', `
-                        <tr>
-                            <td class="ps-3 py-1 font-monospace small" style="color:#8b949e">${batch.chunk[idx]}</td>
-                            <td class="text-end pe-3 py-1 text-success fw-bold">${eth} ETH</td>
-                        </tr>
-                    `);
-                }
-            });
-        });
+    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+        const chunk = addresses.slice(i, i + BATCH_SIZE);
+        status.innerText = `Skenuji: ${i + 1} - ${Math.min(i + BATCH_SIZE, addresses.length)} / ${addresses.length}`;
 
-        // Aktualizace statistik
-        const processed = Math.min(i + BATCH_SIZE * 2, addresses.length);
-        totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(4);
-        foundCount.innerText = found;
-        pBar.style.width = `${(processed / addresses.length) * 100}%`;
-        status.innerText = `Průběh: ${processed} / ${addresses.length} (${Math.round(processed / ((performance.now()-startTime)/1000))} /s)`;
-        
-        if (found > 0) document.getElementById('resultsArea').classList.remove('d-none');
-        
-        // Malá pauza pro uvolnění vlákna prohlížeče (aby nezamrzl)
-        await new Promise(r => setTimeout(r, 10));
-    }
+        let data = null;
+        let attempt = 0;
 
-    const duration = ((performance.now() - startTime) / 1000).toFixed(2);
-    btn.disabled = false;
-    status.innerHTML = `<span class="text-success">DOKONČENO! ${addresses.length} adres za ${duration}s.</span>`;
-}
+        // Mechanismus "Nikdy se nevzdávej" - zkusí balík až 3x
+        while (attempt < 3) {
+            try {
+                const body = chunk.map((addr, idx) => ({
+                    jsonrpc: "2.0", id: i + idx, method: "eth_getBalance", params: [addr, "latest"]
+                }));
 
-async function fetchChunk(chunk, offset) {
-    if (chunk.length === 0) return null;
-    const body = chunk.map((addr, idx) => ({
-        jsonrpc: "2.0", id: offset + idx, method: "eth_getBalance", params: [addr, "latest"]
-    }));
+                const res = await fetch(RPC_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+                });
 
-    try {
-        let res = await fetch(ALCHEMY_URL, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-        });
-        
-        // Pokud Alchemy limituje (429), zkusíme okamžitě zálohu
-        if (res.status === 429) {
-            res = await fetch(BACKUP_URL, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-            });
+                if (res.status === 429) throw new Error("Rate Limit");
+
+                data = await res.json();
+                if (Array.isArray(data)) break; // Úspěch
+            } catch (e) {
+                attempt++;
+                status.innerText = `Alchemy nestíhá, čekám a zkouším znovu (${attempt}/3)...`;
+                await new Promise(r => setTimeout(r, 1000 * attempt));
+            }
         }
-        
-        const data = await res.json();
-        return { data, chunk };
-    } catch (e) {
-        return null;
+
+        if (data && Array.isArray(data)) {
+            let logHtml = "";
+            data.forEach((res, idx) => {
+                const addr = chunk[idx];
+                let displayBal = "0.00";
+                let styleStr = "eth-zero";
+
+                if (res.result) {
+                    const wei = BigInt(res.result);
+                    if (wei > 0n) {
+                        totalWei += wei;
+                        positiveFound++;
+                        displayBal = (Number(wei) / 1e18).toFixed(6);
+                        styleStr = "eth-green";
+                    }
+                }
+
+                logHtml += `<div class="d-flex justify-content-between border-bottom border-dark py-1">
+                    <span class="text-muted">${addr}</span>
+                    <span class="${styleStr}">${displayBal} ETH</span>
+                </div>`;
+            });
+            
+            logBox.insertAdjacentHTML('afterbegin', logHtml);
+            totalDisp.innerText = (Number(totalWei) / 1e18).toFixed(4);
+            posDisp.innerText = positiveFound;
+        }
+
+        // Progress bar a malá pauza
+        pBar.style.width = `${(Math.min(i + BATCH_SIZE, addresses.length) / addresses.length) * 100}%`;
+        await new Promise(r => setTimeout(r, 150)); // Stabilizační pauza
     }
+
+    status.innerText = "HOTOVO!";
+    btn.disabled = false;
 }
 </script>
 </body>
