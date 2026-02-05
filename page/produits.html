@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAISON DU LYS / Produits</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/fav-icon/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="./assets/fav-icon/favicon-16x16.png" />
+
+  <!-- Icon Font Stylesheet -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/sidebar.css" />
+  <link rel="stylesheet" href="./assets/css/brands-logo-slider.css" />
+  <link rel="stylesheet" href="./assets/css/footer_styles.css" />
+  <link rel="stylesheet" href="./assets/css/cursor.css" />
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet" />
+
+  <!-- Include WOW.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+  <style>
+    /* Styling for the layout with Slider */
+    .brand-center-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      /* Added for horizontal centering */
+      /* Centering content vertically */
+      min-height: 100vh;
+      width: 100%;
+      padding-top: 0px;
+      /* Removed padding */
+      position: relative;
+    }
+
+    .custom-products-footer {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      margin-top: auto;
+      /* Push to bottom if flex container grows */
+      padding-bottom: 50px;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .custom-products-footer a {
+      font-family: 'BurgoyneInitials', 'BURGOYNE', serif;
+      font-size: 32px;
+      color: #976F3B;
+      text-decoration: none;
+      letter-spacing: 2px;
+    }
+
+    .custom-products-footer a:hover {
+      color: #5b4500;
+    }
+
+    body {
+      overflow-y: auto;
+      /* Hide vertical scrollbar for horizontal scroll behavior */
+      height: 100vh;
+      margin: 0;
+    }
+
+    /* ===== INJECTED MASTER CSS (FONTS, HEADER, MOBILE, FOOTER) ===== */
+    /* ===== FIXED FONT DEFINITIONS ===== */
+    @font-face {
+      font-family: 'BurgoyneInitials';
+      src: url('assets/fonts/BurgoyneInitials.otf');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'BURGOYNE';
+      src: url('assets/fonts/BURGOYNE.TTF') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'QuinoaSC-Semibold';
+      src: url('assets/fonts/QuinoaSC-Semibold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'QuinoaSC-Medium';
+      src: url('assets/fonts/QuinoaSC-Medium.ttf') format('truetype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'QuinoaSC-Regular';
+      src: url('assets/fonts/QuinoaSC-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'QuinoaFooter';
+      src: url('assets/fonts/QuinoaSC-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Ambassador';
+      src: url('assets/fonts/Ambassador Script Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ===== HEADER STYLES ===== */
+    .white-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #ffffff;
+      z-index: 1001;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(151, 111, 59, 0.08);
+      transition: all 0.3s ease;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-content {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .main-navigation {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .main-navigation ul {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      list-style: none;
+      gap: 60px;
+      flex-wrap: wrap;
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-navigation a {
+      font-family: 'BurgoyneInitials', serif;
+      font-size: 20px;
+      color: #976F3B;
+      text-decoration: none;
+      letter-spacing: 1.2px;
+      transition: all 0.3s ease;
+      position: relative;
+      padding: 12px 0;
+      font-weight: normal;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .main-navigation a:hover {
+      color: #7a5a2f;
+    }
+
+    .main-navigation a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background-color: #976F3B;
+      transition: width 0.3s ease;
+    }
+
+    .main-navigation a:hover::after {
+      width: 100%;
+    }
+
+    .main-navigation a.active-section {
+      color: #7a5a2f;
+      font-weight: normal;
+    }
+
+    .main-navigation a.active-section::after {
+      width: 100%;
+    }
+
+    /* ===== MOBILE NAV CSS ===== */
+    .mobile-nav-show {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      cursor: pointer;
+      font-size: 28px;
+      color: #976F3B;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-nav-hide {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      cursor: pointer;
+      font-size: 28px;
+      color: #976F3B;
+      background: transparent;
+      padding: 10px;
+      transition: all 0.3s ease;
+    }
+
+    #mobile-navbar {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      height: 100vh;
+      background-color: #ffffff;
+      z-index: 9998;
+      transition: right 0.5s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    #mobile-navbar.active {
+      right: 0;
+    }
+
+    #mobile-navbar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    #mobile-navbar a {
+      font-family: 'QuinoaSC-Medium', serif;
+      font-size: 24px;
+      color: #976F3B;
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      position: relative;
+      display: inline-block;
+    }
+
+    #mobile-navbar a::first-letter {
+      font-family: 'BurgoyneInitials', serif;
+      font-size: 32px;
+      margin-right: 2px;
+      vertical-align: -2px;
+    }
+
+    #mobile-navbar a:hover {
+      color: #7a5a2f;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 991px) {
+      .mobile-nav-show {
+        display: block;
+      }
+
+      .main-navigation {
+        display: none !important;
+      }
+
+      .white-header {
+        display: none;
+      }
+    }
+
+    /* ===== FOOTER CSS ===== */
+    .elegant-footer {
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+    }
+
+    .footer-background-wrapper {
+      width: 100%;
+      min-height: 100vh;
+      background-image: url('assets/images/Angels%20bg%20doves%20bows.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      padding: 80px 40px 0;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .footer-background-wrapper::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .footer-white-wrapper {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      position: relative;
+      background: rgba(255, 255, 255, 0.5) !important;
+      backdrop-filter: none !important;
+      border-radius: 50px 50px 0 0 !important;
+      padding: 70px 50px 50px 50px !important;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .footer-content-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 25px !important;
+      margin-bottom: 40px !important;
+      align-items: start;
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 15px !important;
+      align-items: center;
+      text-align: center;
+    }
+
+    .footer-heading {
+      font-family: Arial, sans-serif !important;
+      font-size: 30px !important;
+      margin-bottom: 25px !important;
+      letter-spacing: 0.5px !important;
+      font-weight: 400 !important;
+      line-height: 1.2 !important;
+      text-transform: none !important;
+      color: #886807 !important;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .footer-heading::first-letter {
+      font-family: 'BURGOYNE', serif !important;
+      font-size: 40px !important;
+      float: none;
+      margin-right: 1px;
+      vertical-align: 0;
+    }
+
+    .footer-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px !important;
+      width: 100%;
+      align-items: center;
+    }
+
+    .footer-text,
+    .footer-link,
+    .footer-subtitle {
+      font-family: 'QuinoaFooter', serif !important;
+      font-size: 14px !important;
+      font-weight: 100 !important;
+      color: #886807 !important;
+      line-height: 1.6 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      letter-spacing: 0.6px !important;
+      text-decoration: none !important;
+      transition: color 0.3s ease;
+      text-transform: none !important;
+      display: block;
+      opacity: 0.9 !important;
+    }
+
+    .footer-logo-text {
+      font-family: 'BURGOYNE', serif !important;
+      color: #886807 !important;
+      margin: 0 !important;
+      letter-spacing: 4px !important;
+      font-weight: normal !important;
+      line-height: 1 !important;
+      text-align: center;
+    }
+
+    .logo-initial {
+      font-size: 48px !important;
+    }
+
+    .logo-rest {
+      font-size: 42px !important;
+    }
+
+    .footer-brand-text {
+      font-family: 'Ambassador', cursive !important;
+      font-size: 16px !important;
+      color: #886807 !important;
+      margin: 0 !important;
+      opacity: 1;
+    }
+
+    .footer-copyright p {
+      font-family: 'QuinoaFooter', serif !important;
+      font-size: 20px !important;
+      font-weight: 100 !important;
+      color: #886807 !important;
+      margin: 0 !important;
+      letter-spacing: 0.6px !important;
+      text-transform: none !important;
+      opacity: 0.85 !important;
+    }
+
+    @media (max-width: 1024px) {
+      .footer-content-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 50px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .footer-content-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+
+
+    .footer-logo-image {
+      width: 280px;
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 5px;
+    }
+
+    /* Hide ROI slider section (wrong content) */
+    .slider-roi,
+    .marker-wrapper-roi {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-wrapper">
+
+    <!-- Sidebar Navigation Removed as per user request -->
+
+    <section class="left-section" id="mainpage-column2">
+      <div class="left-section-column1">
+
+        <div class="brand-main-row">
+
+          <div class="brand-center-content-wrapper" id="">
+
+            <!-- Mouse Cursor Circle -->
+            <div class="mouse" id="cursor" data-attribute="">
+              <p class="mouse__link" style="">
+                Défilez vers <br />
+                le bas voir plus
+              </p>
+            </div>
+
+            <!-- Marker for the vertical line -->
+            <div class="marker-wrapper">
+              <div class="marker"></div>
+              <div class="active-slide">1/3</div>
+            </div>
+
+            <!-- brand-text-content removed per user request -->
+
+            <!-- Slider/Main Content Section INSIDE wrapper -->
+            <div class="slider" style="margin-top: 0;">
+              <div class="slider-wrapper">
+                <div class="slide animate__animated animate__fadeIn wow">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys1.jpeg" alt="Maison du lys1.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys2.jpeg" alt="Maison du lys2.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys3.jpeg" alt="Maison du lys3.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys4.jpeg" alt="Maison du lys4.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys5.jpeg" alt="Maison du lys5.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys6.jpeg" alt="Maison du lys6.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys7.jpeg" alt="Maison du lys7.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys8.jpeg" alt="Maison du lys8.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys9.jpeg" alt="Maison du lys9.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys10.jpeg" alt="Maison du lys10.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys11.jpeg" alt="Maison du lys11.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys12.jpeg" alt="Maison du lys12.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys13.jpeg" alt="Maison du lys13.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys14.jpeg" alt="Maison du lys14.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys15.jpeg" alt="Maison du lys15.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys16.jpeg" alt="Maison du lys16.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys16a.jpeg" alt="Maison du lys16a.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys16b.jpeg" alt="Maison du lys16b.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys16c.jpeg" alt="Maison du lys16c.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys16d.jpeg" alt="Maison du lys16d.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys16e.jpeg" alt="Maison du lys16e.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys17.jpeg" alt="Maison du lys17.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys18.jpeg" alt="Maison du lys18.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys19.jpeg" alt="Maison du lys19.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys20.jpeg" alt="Maison du lys20.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys21.jpeg" alt="Maison du lys21.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys22.jpeg" alt="Maison du lys22.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys23.jpeg" alt="Maison du lys23.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys24.jpeg" alt="Maison du lys24.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys25.jpeg" alt="Maison du lys25.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys26.jpeg" alt="Maison du lys26.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys27.jpeg" alt="Maison du lys27.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys28.jpeg" alt="Maison du lys28.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys29.jpeg" alt="Maison du lys29.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys30.jpeg" alt="Maison du lys30.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys31.jpeg" alt="Maison du lys31.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys32.jpeg" alt="Maison du lys32.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys33.jpeg" alt="Maison du lys33.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys34.jpeg" alt="Maison du lys34.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys35.jpeg" alt="Maison du lys35.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys36.jpeg" alt="Maison du lys36.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys37.jpeg" alt="Maison du lys37.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys38.jpeg" alt="Maison du lys38.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys39.jpeg" alt="Maison du lys39.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys40.jpeg" alt="Maison du lys40.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys41.jpeg" alt="Maison du lys41.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys42.jpeg" alt="Maison du lys42.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys43.jpeg" alt="Maison du lys43.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys44.jpeg" alt="Maison du lys44.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys45.jpeg" alt="Maison du lys45.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys45Aa.jpeg" alt="Maison du lys45Aa.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys45B.jpeg" alt="Maison du lys45B.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys46.jpeg" alt="Maison du lys46.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys47.jpeg" alt="Maison du lys47.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys49.jpeg" alt="Maison du lys49.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys50.jpeg" alt="Maison du lys50.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys51.jpeg" alt="Maison du lys51.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys52.jpeg" alt="Maison du lys52.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys53.jpeg" alt="Maison du lys53.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys54.jpeg" alt="Maison du lys54.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys55.jpeg" alt="Maison du lys55.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys56.jpeg" alt="Maison du lys56.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys57.001.jpeg" alt="Maison du lys57.001.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys57.jpeg" alt="Maison du lys57.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys58.jpeg" alt="Maison du lys58.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys59.jpeg" alt="Maison du lys59.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys60.jpeg" alt="Maison du lys60.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys61.jpeg" alt="Maison du lys61.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys62.jpeg" alt="Maison du lys62.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys63.jpeg" alt="Maison du lys63.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys64.jpeg" alt="Maison du lys64.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys65.jpeg" alt="Maison du lys65.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys66.jpeg" alt="Maison du lys66.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys67.jpeg" alt="Maison du lys67.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys68.jpeg" alt="Maison du lys68.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys69.jpeg" alt="Maison du lys69.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys70.jpeg" alt="Maison du lys70.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys71.jpeg" alt="Maison du lys71.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys72.jpeg" alt="Maison du lys72.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys73.jpeg" alt="Maison du lys73.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys74.jpeg" alt="Maison du lys74.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys75.jpeg" alt="Maison du lys75.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys76.jpeg" alt="Maison du lys76.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys77.jpeg" alt="Maison du lys77.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys78.jpeg" alt="Maison du lys78.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys79.jpeg" alt="Maison du lys79.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys80.jpeg" alt="Maison du lys80.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys81.jpeg" alt="Maison du lys81.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys82.jpeg" alt="Maison du lys82.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys83.jpeg" alt="Maison du lys83.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys84.jpeg" alt="Maison du lys84.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys85.jpeg" alt="Maison du lys85.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys86.jpeg" alt="Maison du lys86.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys87.jpeg" alt="Maison du lys87.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys88.jpeg" alt="Maison du lys88.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys89.jpeg" alt="Maison du lys89.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys90.jpeg" alt="Maison du lys90.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys91.jpeg" alt="Maison du lys91.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys92.jpeg" alt="Maison du lys92.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys93.jpeg" alt="Maison du lys93.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys94.jpeg" alt="Maison du lys94.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys95.jpeg" alt="Maison du lys95.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys96.jpeg" alt="Maison du lys96.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys97.jpeg" alt="Maison du lys97.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys112.jpeg" alt="Maison du lys112.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys113.jpeg" alt="Maison du lys113.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys114.jpeg" alt="Maison du lys114.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys115.jpeg" alt="Maison du lys115.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys116.jpeg" alt="Maison du lys116.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys117.jpeg" alt="Maison du lys117.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys118.jpeg" alt="Maison du lys118.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide">
+                  <a href="">
+                    <img src="./assets/images/Products Slider/Maison du lys119.jpeg" alt="Maison du lys119.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Removed as per user request -->
+
+
+            <!-- ROI Slider Section -->
+            <div class="marker-wrapper-roi">
+              <div class="marker"></div>
+              <div class="active-slide-roi">1/3</div>
+            </div>
+
+            <div class="slider-roi mobile-hide-roi-section" style="margin-top: 150px; margin-bottom: 50px;">
+              <div class="slider-wrapper-roi">
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas_1.jpeg" alt="ROi Stanislas1.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+
+                <div class="slide-roi mobile-hide-slide" id="roi-slide-2-mobile-p">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas2.jpeg" alt="ROi Stanislas2.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <script>
+                  if (window.innerWidth <= 991) {
+                    const slide = document.getElementById('roi-slide-2-mobile-p');
+                    if (slide) slide.remove();
+                  }
+                </script>
+                <div class="slide-roi mobile-hide-slide" id="roi-slide-3-mobile-p">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas3.jpeg" alt="ROi Stanislas3.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <script>
+                  if (window.innerWidth <= 991) {
+                    const slide = document.getElementById('roi-slide-3-mobile-p');
+                    if (slide) slide.remove();
+                  }
+                </script>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas4.jpeg" alt="ROi Stanislas4.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas5.jpeg" alt="ROi Stanislas5.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas6.jpeg" alt="ROi Stanislas6.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas7.jpeg" alt="ROi Stanislas7.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas8.jpeg" alt="ROi Stanislas8.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas9.jpeg" alt="ROi Stanislas9.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas10.jpeg" alt="ROi Stanislas10.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas11.jpeg" alt="ROi Stanislas11.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas12.jpeg" alt="ROi Stanislas12.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas13.jpeg" alt="ROi Stanislas13.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas14.jpeg" alt="ROi Stanislas14.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+                <div class="slide-roi">
+                  <a href="">
+                    <img src="./assets/images/NEW SLIDER ROI/ROi Stanislas15.jpeg" alt="ROi Stanislas15.jpeg"
+                      class="homePage-logo brand-animation" />
+                  </a>
+                </div>
+
+              </div>
+            </div>
+
+          </div> <!-- End brand-center-content-wrapper -->
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER SECTION -->
+    <footer class="elegant-footer">
+      <div class="footer-background-wrapper">
+        <div class="footer-white-wrapper">
+          <div class="footer-content-grid">
+            <!-- Column 1: Info & Address -->
+            <div class="footer-col" style="align-items: flex-start; text-align: left;">
+              <h3 class="footer-heading">Maison du Lys</h3>
+              <div class="footer-info">
+                <span class="footer-subtitle col-1-shifted">Le siège social:</span>
+                <div class="footer-address-block">
+                  <span class="footer-text">10, Rue de la Paix</span>
+                  <span class="footer-text">75002 Paris</span>
+                  <span class="footer-text">France</span>
+                </div>
+                <span class="foundation-text">Fondation Caritative</span>
+                <a href="#" class="foundation-link-placeholder">En savoir plus</a>
+              </div>
+            </div>
+
+            <!-- Column 2: Legal -->
+            <div class="footer-col legal-column">
+              <h3 class="footer-heading">Légal</h3>
+              <div class="footer-info">
+                <a href="mention-lEgales.html" class="legal-link">Mentions Légales</a>
+                <a href="#" class="legal-link">CGV</a>
+                <a href="#" class="legal-link">Politique de retour</a>
+                <a href="#" class="legal-link">Politique de Confidentialité</a>
+                <a href="#" class="legal-link">Politique de Cookies</a>
+              </div>
+            </div>
+
+            <!-- Column 3: Contact -->
+            <div class="footer-col contact-column">
+              <h3 class="footer-heading">Contact</h3>
+              <div class="footer-info">
+                <span class="footer-contact-title">Service Client :</span>
+                <a href="mailto:contact@maisondulys.fr" class="footer-contact-link">contact@maisondulys.fr</a>
+                <span class="footer-contact-title" style="margin-top: 10px;">Presse / Partenariats :</span>
+                <a href="mailto:presse@maisondulys.fr" class="footer-contact-link">presse@maisondulys.fr</a>
+              </div>
+            </div>
+
+            <!-- Column 4: Newsletter -->
+            <div class="footer-col">
+              <h3 class="footer-heading">Newsletter</h3>
+              <div class="footer-newsletter">
+                <button class="subscribe-btn">S'inscrire</button>
+                <a href="#" class="footer-placeholder-link">S'abonner</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Branding -->
+          <div class="footer-bottom">
+            <div class="footer-logo-section">
+              <img src="assets/images/maison%20lys%20A.png" alt="Maison du Lys Logo" class="footer-logo-image">
+            </div>
+            <p class="footer-brand-text">Maison du Lys Paris</p>
+            <div class="footer-copyright">
+              <p>© 2025 Maison du Lys. Tous droits réservés.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div> <!-- End Main Wrapper -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+    integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
+    integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="./assets/js/script.js"></script>
+  <script src="./assets/js/brand-slider.js"></script>
+  <script src="./assets/js/brand-slider-roi.js"></script>
+  <script src="./assets/js/cursor.js"></script>
+  <script src="./assets/js/cursor.js"></script>
+  <script src="./assets/js/main.js"></script>
+
+  <script>
+    // MOBILE NAVIGATION TOGGLE
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileNavShow = document.querySelector('.mobile-nav-show');
+      const mobileNavHide = document.querySelector('.mobile-nav-hide');
+      const mobileNavbar = document.querySelector('#mobile-navbar');
+      const body = document.querySelector('body');
+
+      if (mobileNavShow && mobileNavHide && mobileNavbar) {
+        mobileNavShow.addEventListener('click', () => {
+          mobileNavbar.classList.add('active');
+          mobileNavShow.style.display = 'none';
+          mobileNavHide.style.display = 'block';
+          body.style.overflow = 'hidden'; // Prevent scrolling
+        });
+
+        mobileNavHide.addEventListener('click', () => {
+          mobileNavbar.classList.remove('active');
+          mobileNavShow.style.display = 'block';
+          mobileNavHide.style.display = 'none';
+          body.style.overflow = 'auto'; // Restore scrolling
+        });
+
+        // Close menu when clicking a link
+        const navLinks = document.querySelectorAll('#mobile-navbar a');
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            mobileNavbar.classList.remove('active');
+            mobileNavShow.style.display = 'block';
+            mobileNavHide.style.display = 'none';
+            body.style.overflow = 'auto';
+          });
+        });
+      }
+    });
+
+    // SCROLL HEADER EFFECT
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('.white-header');
+      if (header) {
+        if (window.scrollY > 50) {
+          header.style.height = '50px';
+          header.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
+        } else {
+          header.style.height = '60px';
+          header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+        }
+      }
+    });
+  </script>
+
+  <script>
+    // Initialize potential scripts
+    new WOW().init();
+  </script>
+
+  <script>
+    // Sidebar Toggle Logic
+    document.addEventListener("DOMContentLoaded", function () {
+      const sidebar = document.querySelector(".sidebar-div");
+      const openBtn = document.getElementById("dashboard2-sidebar-open");
+      const closeBtn = document.getElementById("dashboard2-side-close-btn");
+      const mainColumn = document.getElementById("mainpage-column2");
+
+      if (openBtn && sidebar) {
+        openBtn.addEventListener("click", function () {
+          // Using standard sidebar width toggle logic matching CSS
+          if (sidebar.style.width === "250px") {
+            sidebar.style.width = "4.5%";
+          } else {
+            sidebar.style.width = "250px";
+          }
+        });
+      }
+
+      if (closeBtn && sidebar) {
+        closeBtn.addEventListener("click", function () {
+          sidebar.style.width = '4.5%';
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>
