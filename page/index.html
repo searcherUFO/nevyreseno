@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -72,6 +73,18 @@
             height: auto;
             display: block;
             /* Pro: Remove bottom gap */
+        }
+
+        /* Prevent selection on sliders and navigation arrows */
+        .swiper,
+        .swiper-slide,
+        .swiper-button-next,
+        .swiper-button-prev,
+        .swiper-pagination {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         /* ===== FIXED FONT DEFINITIONS ===== */
