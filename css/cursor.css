@@ -1,0 +1,162 @@
+@font-face {
+    font-family: "ChocolateBoxDecorative";
+    src: url("/Eng-version/assets/fonts/ChocolateBoxDecorative\ \(1\).otf");
+}
+
+
+
+
+
+
+
+/* //Conditions to get designed a and button. It's simple and no animation on them. If you don't know clamp in font-size, go check it, it's really usefull for media queries */
+.home__button {
+    cursor: pointer;
+    border: 1px solid black;
+    font-size: clamp(2rem, 1vw, 2.5rem);
+    padding: 20px 40px;
+    background: none;
+    width: 200px;
+    text-align: center
+}
+
+/* //Get a simple cursor. It fixed and left and top are initialized to 0. Theses conditions are changing with position of mouse cursor in JS. Make transition property for after with reveal of icons in it. */
+.mouse {
+    /* width: 36px;
+    height: 36px; */
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    /* border: 1px solid rgba(255, 255, 255, 0.8); */
+    /* border: 2px white solid; */
+    border: 2px solid #BF935B;
+    /* background: rgba(255, 208, 0, 0.8); */
+    background: transparent;
+    pointer-events: none;
+    transition: all 1s ease;
+
+
+
+}
+
+
+.mouse p {
+    mix-blend-mode: normal;
+    text-align: center;
+    font-family: "ChocolateBoxDecorative", sans-serif !important;
+    font-size: 16px;
+    color: #976f3b;
+
+    font-weight: 400;
+    /* display: flex;
+    flex-direction: column;
+    align-items: center; */
+
+
+    position: absolute;
+    /* width: 25px;
+    height: 25px; */
+    width: max-content;
+    height: max-content;
+    opacity: 1;
+    transition: all .5s ease;
+    top: 50%;
+    left: 50%;
+    /* transform: translateX(-50%) translateY(-50%); */
+    transform: translateX(-50%) translateY(-50%) scale(1.5);
+}
+
+
+
+
+
+/* //initialized of 3 icons in the cursor. They are in absolute and top and left at 50% to be in the center. Transform translate are there to center perfectly the icons */
+.mouse__home,
+.mouse__clic,
+.mouse__link {
+
+    /* position: absolute; */
+    /* width: 25px;
+    height: 25px; */
+    /* width: max-content;
+    height: max-content;
+    opacity: 0;
+    transition: all .5s ease;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%); */
+}
+
+
+.mouse[data-attribute="home"],
+.mouse[data-attribute="link"] {
+    /* width: 240px;
+    height: 240px;
+    background: transparent;
+    mix-blend-mode: normal;
+    text-align: center;
+    font-family: "ChocolateBoxDecorative", sans-serif !important; */
+}
+
+/* //When the cursor get the attribute changed to home by the JavaScript, it changed. You can in the same time reveal the icon in it with opacity and change of scale. Don't forget to translate X and Y in the same time to get perfectly centered  */
+.mouse[data-attribute="home"] {
+    /* width: 90px;
+    height: 90px;
+    background: transparent;
+    mix-blend-mode: normal; */
+
+    & .mouse__home {
+        transform: translateX(-50%) translateY(-50%) scale(1.5);
+        opacity: 1;
+    }
+}
+
+/* //Same as before in data-attribute home */
+.mouse[data-attribute="link"] {
+    width: 46px;
+    height: 46px;
+    opacity: 3;
+    /* z-index: 1000; */
+    background-color: white;
+
+    /* width: 200px;
+    height: 200px;
+    background: transparent;
+    mix-blend-mode: normal; */
+
+    & .mouse__link {
+        transform: translateX(-50%) translateY(-50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+
+
+
+
+
+
+
+
+/* //and the same again */
+/* .mouse[data-attribute="button"] {
+    width: 50px;
+    height: 50px;
+    background: green;
+    mix-blend-mode: normal;
+
+    & .mouse__clic {
+        transform: translateX(-50%) translateY(-50%) scale(1.5);
+        opacity: 1;
+    }
+} */
+
+@media screen and (max-width: 746px) {
+    .mouse {
+        display: none;
+    }
+}
