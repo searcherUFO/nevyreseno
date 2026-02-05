@@ -6131,7 +6131,10 @@
 
             // Initialize the new Horizontal Product Slider
             document.querySelectorAll('.product-swiper').forEach(function (slider) {
+                const slidesCount = slider.querySelectorAll('.swiper-slide').length;
+                const startSlide = Math.floor(slidesCount / 2);
                 new Swiper(slider, {
+                    initialSlide: startSlide,
                     slidesPerView: 1.2,
                     spaceBetween: 10,
                     centeredSlides: true,
@@ -6165,7 +6168,10 @@
             });
 
             // Initialize the NEW Concept Product Slider
+            const conceptSlider = document.querySelector(".concept-product-swiper");
+            const conceptStartSlide = conceptSlider ? Math.floor(conceptSlider.querySelectorAll('.swiper-slide').length / 2) : 0;
             var conceptProductSwiper = new Swiper(".concept-product-swiper", {
+                initialSlide: conceptStartSlide,
                 slidesPerView: 1, // Start with 1 for mobile
                 spaceBetween: 20, // Smaller gap for mobile
                 centeredSlides: true,
@@ -6196,7 +6202,10 @@
             }
 
             // Initialize KINGS Slider
+            const kingsSliderElement = document.querySelector(".kings-swiper");
+            const kingsStartSlide = kingsSliderElement ? Math.floor(kingsSliderElement.querySelectorAll('.swiper-slide').length / 2) : 0;
             var kingsSwiper = new Swiper(".kings-swiper", {
+                initialSlide: kingsStartSlide,
                 slidesPerView: 1, // Start with 1 for mobile
                 spaceBetween: 0,
                 centeredSlides: true,
