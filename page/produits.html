@@ -117,7 +117,7 @@
       align-items: center;
       min-height: 100vh;
       width: 100%;
-      padding-top: 40px;
+      padding: 40px 0 60px;
       position: relative;
     }
 
@@ -125,7 +125,7 @@
     .catalog-progress-container {
       width: 100%;
       max-width: 800px;
-      margin: 0 auto 40px;
+      margin: 0 auto 50px;
       padding: 0 20px;
     }
 
@@ -170,7 +170,7 @@
       width: 100%;
       overflow: hidden;
       position: relative;
-      padding: 20px 0 60px;
+      padding: 30px 0 60px;
       cursor: default;
     }
 
@@ -197,24 +197,29 @@
 
     .slider-wrapper {
       display: flex;
-      gap: 30px;
-      padding: 20px 60px;
+      gap: 80px;
+      padding: 20px 100px;
       transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: default;
+      align-items: center;
     }
 
     /* ===== PRODUCT CARDS ===== */
     .slide {
       flex: 0 0 auto;
-      width: 320px;
-      height: 480px;
-      border-radius: 20px;
+      width: 380px;
+      height: auto;
+      max-height: 70vh;
+      border-radius: 8px;
       overflow: hidden;
       background: #fff;
       box-shadow: var(--shadow-soft);
       transition: var(--transition-smooth);
       position: relative;
       cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .slide:hover {
@@ -224,35 +229,32 @@
 
     .slide img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
+      max-height: 70vh;
+      object-fit: contain;
       transition: transform 0.6s ease;
       pointer-events: none;
+      display: block;
     }
 
     .slide:hover img {
-      transform: scale(1.08);
-    }
-
-    .slide::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.4) 100%);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      pointer-events: none;
-    }
-
-    .slide:hover::after {
-      opacity: 1;
+      transform: scale(1.03);
     }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 991px) {
       .slide {
-        width: 280px;
-        height: 420px;
+        width: 320px;
+        max-height: 65vh;
+      }
+
+      .slide img {
+        max-height: 65vh;
+      }
+
+      .slider-wrapper {
+        gap: 50px;
+        padding: 20px 60px;
       }
 
       .catalog-progress-container {
@@ -271,13 +273,17 @@
 
     @media (max-width: 576px) {
       .slide {
-        width: 260px;
-        height: 380px;
+        width: 280px;
+        max-height: 60vh;
+      }
+
+      .slide img {
+        max-height: 60vh;
       }
 
       .slider-wrapper {
-        padding: 20px 30px;
-        gap: 20px;
+        padding: 20px 40px;
+        gap: 30px;
       }
 
       .catalog-progress-labels {
@@ -373,7 +379,7 @@
     let scrollTimeout;
 
     function updateSlider() {
-      const slideWidth = 350;
+      const slideWidth = 460; // slide width + gap
       const offset = -currentSlide * slideWidth;
       sliderTrack.style.transform = `translateX(${offset}px)`;
       updateProgressBar();
@@ -442,7 +448,7 @@
       if (!isDragging) return;
       e.preventDefault();
       const x = e.pageX;
-      const walk = (startX - x) / 350;
+      const walk = (startX - x) / 460;
       const newSlide = Math.round(startScrollLeft + walk);
       if (newSlide !== currentSlide) {
         scrollToSlide(newSlide);
