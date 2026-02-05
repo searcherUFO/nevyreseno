@@ -769,15 +769,15 @@
         .product-swiper .swiper-button-prev {
             color: #976F3B !important;
             background: rgba(255, 255, 255, 0.1) !important;
-            width: 50px !important;
-            height: 50px !important;
-            border-radius: 50% !important;
+            width: 40px !important;
+            height: 450px !important;
+            border-radius: 0 !important;
             border: none !important;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
             z-index: 100;
-            top: 50% !important;
-            margin-top: -25px !important;
+            top: 40px !important;
+            margin-top: 0 !important;
             display: flex !important;
             align-items: center;
             justify-content: center;
@@ -801,8 +801,8 @@
         @media (max-width: 768px) {
             .product-swiper .swiper-button-next,
             .product-swiper .swiper-button-prev {
-                width: 40px !important;
-                height: 40px !important;
+                width: 30px !important;
+                height: 300px !important;
             }
             .product-swiper .swiper-button-next:after,
             .product-swiper .swiper-button-prev:after {
@@ -6132,13 +6132,17 @@
             // Initialize the new Horizontal Product Slider
             document.querySelectorAll('.product-swiper').forEach(function (slider) {
                 new Swiper(slider, {
-                    slidesPerView: 1.2,
-                    spaceBetween: 10,
+                    slidesPerView: 1,
+                    spaceBetween: 0,
                     centeredSlides: true,
                     loop: true,
+                    effect: 'fade',
+                    fadeEffect: {
+                        crossFade: true
+                    },
                     slidesPerGroup: 1,
                     loopAdditionalSlides: 2,
-                    speed: 1000,
+                    speed: 800,
                     autoplay: false, 
                     navigation: {
                         nextEl: slider.querySelector(".swiper-button-next"),
@@ -6150,16 +6154,6 @@
                     },
                     keyboard: {
                         enabled: true,
-                    },
-                    breakpoints: {
-                        768: {
-                            slidesPerView: 2,
-                            spaceBetween: 20,
-                        },
-                        1200: {
-                            slidesPerView: 2.5, 
-                            spaceBetween: 30,
-                        }
                     }
                 });
             });
