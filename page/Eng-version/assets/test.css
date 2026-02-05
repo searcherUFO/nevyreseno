@@ -1,0 +1,157 @@
+@font-face {
+    font-family: "BurgoyneInitials";
+    src: url("/assets/fonts/BurgoyneInitials.otf");
+}
+
+
+body{
+    margin: 0px;
+    padding: 0px;
+}
+
+
+.main-wrapper{
+   display: flex;
+   flex-direction: row;
+}
+
+
+
+.left-section{
+    width: 100%;
+    /* border: 3px solid green; */
+    padding-left: 60px;
+    /* background-color: black; */
+}
+
+
+
+
+.left-section-column1 {
+    display: flex;
+    flex-direction: column;
+    /* height: 100vh; */
+
+
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}
+
+.left-sec-row1 {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: end;
+    /* margin-top: 10px; */
+    border: 2px solid green;
+    
+}
+
+.olab-title-img1 {
+    /* font-family: "BurgoyneInitials", sans-serif;
+    font-size: 3.7pc;
+    letter-spacing: 12px;
+    margin-bottom: 0px; */
+    margin-left: -4pc;
+    width: 25%;
+}
+
+.olab-title-img2 {
+    margin-left: 10pc;
+    width: 25%;
+}
+
+
+.left-sec-row2 {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    /* display: none; */
+
+    align-items: center;
+
+    position: relative;
+
+
+    height: auto;
+    box-sizing: border-box;
+}
+
+.left-sec-row2-pillar1,
+.left-sec-row2-pillar2{
+    width: initial; 
+    height: 85vh; 
+    /* min-width: 10%;  */
+    -webkit-box-sizing: border-box; 
+    /* border: 1px solid red; */
+}
+
+.left-sec-row3 {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    /* margin-top: -4pc; */
+    top: -2pc;
+    position: relative;
+
+}
+
+.left-sec-row3-heading1 {
+    font-family: "BurgoyneInitials", sans-serif;
+    font-size: 1.3pc;
+    letter-spacing: 6px;
+    margin-bottom: 0px;
+    color: #A06E09;
+    /* margin-right: 5pc; */
+    margin-left: -4pc;
+}
+
+
+.left-sec-row3-heading2 {
+    font-family: "BurgoyneInitials", sans-serif;
+    font-size: 1.3pc;
+    letter-spacing: 6px;
+    margin-bottom: 0px;
+    color: #A06E09;
+    margin-left: -15pc;
+
+}
+
+
+/* Firefox */
+@-moz-document url-prefix() {
+    .left-sec-row2-pillar1,
+.left-sec-row2-pillar2{
+    width: 65%; 
+    height: max-content; 
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* .left-sec-row2-pillar1 {
+    position: fixed;
+    z-index: 10;
+    width: initial;
+    height: 70vh;
+}
+
+.left-sec-row2-pillar2 {
+    position: fixed;
+    right: 0;
+    z-index: 10;
+    width: initial;
+    height: 70vh;
+} */
