@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MAISON DU LYS | Collection Produits</title>
+
+<link rel="icon" type="image/png" sizes="32x32" href="./assets/fav-icon/favicon-32x32.png"/>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="./assets/css/bootstrap.min.css"/>
+
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet"/>
+
+<style>
+
+:root{
+--bg-cream:#faf8f5;
+--shadow-soft:0 10px 40px rgba(0,0,0,0.08);
+--shadow-hover:0 20px 60px rgba(151,111,59,.15);
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+user-select:none;
+}
+
+body{
+overflow:hidden; /* ✅ NO VERTICAL SCROLL */
+height:100vh;
+background:var(--bg-cream);
+font-family:'Libre Baskerville',serif;
+}
+
+/* CENTER */
+.brand-center-content-wrapper{
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+/* SLIDER */
+
+.slider{
+width:100%;
+overflow:hidden;
+position:relative;
+padding:60px 0;
+}
+
+.slider-wrapper{
+display:flex;
+gap:140px; /* ✅ BIGGER SPACE */
+padding:40px 160px;
+transition:transform .6s cubic-bezier(.4,0,.2,1);
+align-items:center;
+}
+
+/* SLIDE */
+
+.slide{
+flex:0 0 auto;
+width:480px; /* ✅ bigger */
+border-radius:10px;
+overflow:hidden;
+background:#fff;
+box-shadow:var(--shadow-soft);
+transition:.4s;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.slide:hover{
+transform:translateY(-12px) scale(1.03);
+box-shadow:var(--shadow-hover);
+}
+
+.slide img{
+width:100%;
+height:auto;
+object-fit:contain;
+pointer-events:none;
+}
+
+/* PROGRESS */
+
+.catalog-progress-container{
+width:800px;
+max-width:90%;
+margin-bottom:40px;
+}
+
+.catalog-progress-bar{
+height:4px;
+background:#eee;
+border-radius:2px;
+overflow:hidden;
+}
+
+.catalog-progress-fill{
+height:100%;
+background:#976F3B;
+width:0%;
+transition:.3s;
+}
+
+.catalog-progress-labels{
+display:flex;
+justify-content:space-between;
+margin-top:12px;
+font-size:12px;
+letter-spacing:2px;
+text-transform:uppercase;
+color:#999;
+}
+
+.catalog-progress-labels span.active{
+color:#976F3B;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="brand-center-content-wrapper">
+
+<div class="catalog-progress-container">
+<div class="catalog-progress-bar">
+<div class="catalog-progress-fill" id="progress-fill"></div>
+</div>
+
+<div class="catalog-progress-labels">
+<span id="label-parfums">Parfums</span>
+<span id="label-soins">Soins</span>
+<span id="label-accessoires">Accessoires</span>
+<span id="label-coffrets">Coffrets</span>
+</div>
+</div>
+
+<div class="slider" id="product-slider">
+<div class="slider-wrapper" id="slider-track"></div>
+</div>
+
+</div>
+
+<script>
+
+const productImages = Array.from({length:119},(_,i)=>({num:i+1}));
+
+const sliderTrack=document.getElementById('slider-track');
+
+productImages.forEach(img=>{
+const slide=document.createElement('div');
+slide.className='slide';
+
+slide.innerHTML=`
+<img src="./assets/images/Products Slider/Maison du lys${img.num}.jpeg" loading="lazy">
+`;
+
+sliderTrack.appendChild(slide);
+});
+
+let currentSlide=0;
+const totalSlides=productImages.length;
+
+function getSlideWidth(){
+const slide=document.querySelector('.slide');
+const gap=parseInt(getComputedStyle(sliderTrack).gap);
+return slide.offsetWidth+gap;
+}
+
+function updateSlider(){
+
+const offset=-currentSlide*getSlideWidth();
+sliderTrack.style.transform=`translateX(${offset}px)`;
+
+const progress=((currentSlide+1)/totalSlides)*100;
+document.getElementById('progress-fill').style.width=progress+'%';
+
+}
+
+function scrollToSlide(i){
+currentSlide=Math.max(0,Math.min(i,totalSlides-1));
+updateSlider();
+}
+
+/* WHEEL → ONLY SLIDER */
+
+window.addEventListener('wheel',e=>{
+
+e.preventDefault(); // stops page scroll
+
+if(e.deltaY>0){
+scrollToSlide(currentSlide+1);
+}else{
+scrollToSlide(currentSlide-1);
+}
+
+},{passive:false});
+
+/* DRAG */
+
+let isDragging=false;
+let startX;
+let startSlide;
+
+sliderTrack.addEventListener('mousedown',e=>{
+isDragging=true;
+startX=e.pageX;
+startSlide=currentSlide;
+});
+
+document.addEventListener('mousemove',e=>{
+if(!isDragging)return;
+
+const walk=(startX-e.pageX)/getSlideWidth();
+scrollToSlide(Math.round(startSlide+walk));
+});
+
+document.addEventListener('mouseup',()=>isDragging=false);
+
+/* ARROWS */
+
+document.addEventListener('keydown',e=>{
+if(e.key==="ArrowRight")scrollToSlide(currentSlide+1);
+if(e.key==="ArrowLeft")scrollToSlide(currentSlide-1);
+});
+
+/* TOUCH */
+
+let touchStart=0;
+
+document.getElementById('product-slider').addEventListener('touchstart',e=>{
+touchStart=e.changedTouches[0].screenX;
+},{passive:true});
+
+document.getElementById('product-slider').addEventListener('touchend',e=>{
+
+const diff=touchStart-e.changedTouches[0].screenX;
+
+if(diff>50)scrollToSlide(currentSlide+1);
+if(diff<-50)scrollToSlide(currentSlide-1);
+
+},{passive:true});
+
+updateSlider();
+
+</script>
+
+</body>
+</html>
